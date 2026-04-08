@@ -12,15 +12,21 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/hospital")
+@RequestMapping("/api/admin/hospital")
 @SecurityRequirement(name = "bearerAuth")
-public class HospitalController {
+public class HospitalAdminController {
+
     @Autowired
     HospitalService hospitalService;
 
-    @PutMapping("/update-hospital")
-    public void updateHospital(@RequestBody UpdateHospitalProfileRequest rq) {
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        hospitalService.updateHospitalProfile(email, rq);
+    @GetMapping("/get-list-hospital")
+    public ResponseEntity<?> getListHospital(){
+        try {
+            List<HospitalResponse> response = hospitalService.getAllHospital();
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
+
 }

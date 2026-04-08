@@ -34,15 +34,5 @@ public class AuthController {
         return authService.register(rq);
     }
 
-    @PutMapping("/change-password")
-    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest rq) {
-        try {
-            authService.changPassword(rq);
-            return ResponseEntity.ok("Đổi mật khẩu thành công");
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-
-    }
 
 }

@@ -5,6 +5,7 @@ import com.blood.DTO.Donor.GetListDonorResponse;
 import com.blood.DTO.Donor.VisitorRegistRequest;
 import com.blood.DTO.Profile.UpdateDonorProfileRequest;
 import com.blood.Service.DonorService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -14,6 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/donor")
+@SecurityRequirement(name = "bearerAuth")
 public class DonorController {
     @Autowired
     private DonorService donorService;

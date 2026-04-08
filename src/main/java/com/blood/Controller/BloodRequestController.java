@@ -4,6 +4,7 @@ import com.blood.DTO.Blood.BloodBagDetailResponse;
 import com.blood.DTO.BloodRequest.*;
 import com.blood.Repository.BloodRequestRepository;
 import com.blood.Service.BloodRequestService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/blood-request")
+@SecurityRequirement(name = "bearerAuth")
 public class BloodRequestController {
     @Autowired
     private BloodRequestService bloodRequestService;
@@ -48,10 +50,10 @@ public class BloodRequestController {
         }
     }
 
-    @PostMapping("/rq/{hospitalId}")
-    public ResponseEntity<?> requestBlood(@PathVariable Integer hospitalId, @RequestBody RequestBloodRequest rq) {
+    @PostMapping("/rq")
+    public ResponseEntity<?> requestBlood(@RequestBody RequestBloodRequest rq) {
         try {
-            String message = bloodRequestService.requestBlood(hospitalId, rq);
+            String message = bloodRequestService.requestBlood(rq);
             return ResponseEntity.ok().body(message);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
