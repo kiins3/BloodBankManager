@@ -19,9 +19,9 @@ public class Staff {
     @Id
     @Column(name = "staff_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String staffId;
+    private Integer staffId;
 
-    @OneToOne
+    @OneToOne (fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "user_id",unique = true)
     private Users user;
 

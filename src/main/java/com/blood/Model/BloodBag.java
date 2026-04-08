@@ -23,14 +23,14 @@ public class BloodBag {
     @Column(name = "parent_bag_id")
     private Integer parentBagId;
 
-    @ManyToOne
+    @ManyToOne (fetch = FetchType.LAZY)
     @JoinColumn (name = "registration_id")
     private EventRegistration registration;
 
     @OneToOne(mappedBy = "bloodBag", cascade = CascadeType.ALL)
     private TestResult testResult;
 
-    @ManyToOne
+    @ManyToOne (fetch = FetchType.LAZY)
     @JoinColumn(name = "stored_by")
     private Staff staff;
 
@@ -61,7 +61,7 @@ public class BloodBag {
     @Column(name = "bag_code")
     private String bagCode;
 
-    @ManyToOne
+    @ManyToOne (fetch = FetchType.LAZY)
     @JoinColumn(name = "equipment_id")
     private StorageEquipment storageEquipment;
 

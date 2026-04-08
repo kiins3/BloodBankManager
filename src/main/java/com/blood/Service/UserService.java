@@ -1,6 +1,7 @@
 package com.blood.Service;
 
 import com.blood.DTO.Hospital.CreateHospitalAccountRequest;
+import com.blood.DTO.Hospital.HospitalResponse;
 import com.blood.DTO.Profile.GetDonorProfileResponse;
 import com.blood.DTO.Profile.GetHospitalProfileResponse;
 import com.blood.DTO.Profile.UpdateDonorProfileRequest;
@@ -65,6 +66,7 @@ public class UserService {
             Hospital hospital = hospitalRepository.findByUser(user).orElseThrow (()-> new RuntimeException("Không tìm thấy người dùng"));
 
             GetHospitalProfileResponse response = new GetHospitalProfileResponse();
+            response.setHospitalId(hospital.getHospitalId());
             response.setEmail(user.getEmail());
             response.setHospitalName(hospital.getHospitalName());
             response.setHotline(hospital.getHotline());
@@ -110,7 +112,7 @@ public class UserService {
         user.setEmail(rq.getEmail());
         user.setPassword(passwordEncoder.encode("123456"));
         user.setCreatedAt(LocalDateTime.now());
-        user.setRole("STAFF");
+        user.setRole(rq.getRole());
         user.setStatus("ACTIVE");
         Staff staff = new Staff();
         staff.setUser(user);

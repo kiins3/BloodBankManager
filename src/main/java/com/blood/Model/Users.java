@@ -35,15 +35,15 @@ public class Users {
     @Column (name = "created_at")
     private LocalDateTime createdAt;
 
-    @OneToOne (mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToOne (mappedBy = "user")
     @JsonIgnore
     private Donor donor;
 
-    @OneToOne (mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToOne (mappedBy = "user")
     @JsonIgnore
     private Hospital hospital;
 
-    @OneToOne (mappedBy = "user", cascade = CascadeType.ALL)
+    @OneToOne (mappedBy = "user")
     @JsonIgnore
     private Staff staff;
 

@@ -4,6 +4,7 @@ import com.blood.DTO.Blood.DonationRequest;
 import com.blood.DTO.Donor.DonorResponse;
 import com.blood.DTO.Event.ScreeningRequest;
 import com.blood.DTO.Event.TicketResponse;
+import com.blood.DTO.Event.TicketSummaryResponse;
 import com.blood.Model.Donor;
 import com.blood.Model.Users;
 import com.blood.Repository.DonorRepository;
@@ -16,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/registration")
@@ -52,7 +55,17 @@ public class RegistrationController {
         }
     }
 
-    @GetMapping("/get/ticket/{eventId}")
+    @GetMapping("/get-all-my-tickets")
+    public ResponseEntity<?> getAllMyTicket() {
+        try {
+            List<TicketSummaryResponse> tickets = registrationService.getAllMyTickets();
+            return ResponseEntity.ok(tickets);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/get-my-ticket/{eventId}")
     public ResponseEntity<?> getTicket(@PathVariable Integer eventId) {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -66,6 +79,16 @@ public class RegistrationController {
             return ResponseEntity.ok(ticket);
         } catch (RuntimeException e) {
             return  ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/get-all-donors-of-event/{eventId}")
+    public ResponseEntity<?> getAllDonorsOfEvent(@PathVariable Integer eventId) {
+        try {
+            List<DonorResponse> donors = registrationService.getAllDonorsOfEvent(eventId);
+            return ResponseEntity.ok(donors);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
@@ -90,7 +113,7 @@ public class RegistrationController {
     }
 
     @PostMapping("/donate-blood/{regisId}")
-    public ResponseEntity<?> takeBlood(@PathVariable Integer regisId, DonationRequest rq) {
+    public ResponseEntity<?> takeBlood(@PathVariable Integer regisId, @RequestBody DonationRequest rq) {
         try {
             String message = registrationService.donateBlood(regisId, rq);
             return ResponseEntity.ok(message);

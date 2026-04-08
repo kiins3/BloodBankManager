@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DetailRequest {
+    private Integer detailId;
+
     private String bloodType;
 
     private String productType;
@@ -15,4 +17,6 @@ public class DetailRequest {
     private Integer volume;
 
     private Integer quantity;
+
+    private Integer approvedQuantity;
 }

@@ -22,7 +22,7 @@ public class TestResult {
     @JoinColumn(name = "blood_bag_id")
     private BloodBag bloodBag;
 
-    @ManyToOne
+    @ManyToOne (fetch = FetchType.LAZY)
     @JoinColumn(name = "technician_id")
     private Staff staff;
 

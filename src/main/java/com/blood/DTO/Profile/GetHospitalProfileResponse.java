@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class GetHospitalProfileResponse {
+    private Integer hospitalId;
+
     private String email;
 
     private String hospitalName;

@@ -1,10 +1,8 @@
 package com.blood.Controller;
 
-import com.blood.DTO.BloodRequest.ExportBloodRequest;
-import com.blood.DTO.BloodRequest.ListRequestBloodResponse;
-import com.blood.DTO.BloodRequest.RequestBloodRequest;
-import com.blood.DTO.BloodRequest.ReviewRequestDTO;
-import com.blood.Repository.BloodRequestRepositoty;
+import com.blood.DTO.Blood.BloodBagDetailResponse;
+import com.blood.DTO.BloodRequest.*;
+import com.blood.Repository.BloodRequestRepository;
 import com.blood.Service.BloodRequestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +16,7 @@ public class BloodRequestController {
     @Autowired
     private BloodRequestService bloodRequestService;
     @Autowired
-    private BloodRequestRepositoty bloodRequestRepositoty;
+    private BloodRequestRepository bloodRequestRepositoty;
 
     @GetMapping("/list-request")
     public ResponseEntity<?> getBloodRequestList(@RequestParam(required = false) String hospitalName,
@@ -37,6 +35,15 @@ public class BloodRequestController {
             List<ListRequestBloodResponse> responses = bloodRequestService.getMyListRequest();
             return ResponseEntity.ok().body(responses);
         } catch (Exception e)  {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/detail/{requestId}")
+    public ResponseEntity<?> getRequestDetail(@PathVariable Integer requestId) {
+        try {
+            return ResponseEntity.ok().body(bloodRequestService.getRequestDetail(requestId));
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -67,6 +74,26 @@ public class BloodRequestController {
             String message = bloodRequestService.exportBlood(requestId, rq);
             return ResponseEntity.ok().body(message);
         } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+
+    @GetMapping("/list-suggested-bag/{requestId}")
+    public ResponseEntity<?> listSuggestedBags(@PathVariable Integer requestId) {
+        try {
+            return ResponseEntity.ok().body(bloodRequestService.findBagsByBloodRequest(requestId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/scan-blood-bag/{requestId}")
+    public ResponseEntity<?> scanBloodBag(@PathVariable Integer requestId, @RequestBody ScanBloodBagRequest rq) {
+        try {
+            BloodBagDetailResponse response = bloodRequestService.scanBloodBag(requestId, rq.getBagCode());
+            return ResponseEntity.ok().body(response);
+        } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }

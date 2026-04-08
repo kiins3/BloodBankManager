@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface BloodRequestRepositoty extends JpaRepository<BloodRequest,Integer> {
+public interface BloodRequestRepository extends JpaRepository<BloodRequest,Integer> {
     @Query("SELECT b FROM BloodRequest b JOIN b.hospital h WHERE " +
             ":hospitalName IS NULL OR h.hospitalName = :hospitalName AND " +
             "(:status IS NULL OR b.status = :status)")

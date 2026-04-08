@@ -38,7 +38,7 @@ public class Events {
     @Column (name = "status")
     private String status;
 
-    @OneToMany (mappedBy = "events")
+    @OneToMany (mappedBy = "events", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<EventRegistration> registrations;
 }

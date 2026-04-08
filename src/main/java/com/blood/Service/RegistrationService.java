@@ -2,27 +2,24 @@ package com.blood.Service;
 
 import com.blood.DTO.Blood.DonationRequest;
 import com.blood.DTO.Donor.DonorResponse;
-import com.blood.DTO.Event.RegistrationRequest;
-import com.blood.DTO.Event.RegistrationResponse;
-import com.blood.DTO.Event.ScreeningRequest;
-import com.blood.DTO.Event.TicketResponse;
-import com.blood.Model.BloodBag;
-import com.blood.Model.Donor;
-import com.blood.Model.EventRegistration;
-import com.blood.Model.Events;
-import com.blood.Repository.BloodBagRepository;
-import com.blood.Repository.DonorRepository;
-import com.blood.Repository.EventRegistrationRepository;
-import com.blood.Repository.EventRepository;
+import com.blood.DTO.Event.*;
+import com.blood.Model.*;
+import com.blood.Repository.*;
 import com.blood.helper.QRCodeGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.swing.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 @Service
 public class RegistrationService {
@@ -33,10 +30,13 @@ public class RegistrationService {
     private EventRepository eventRepository;
 
     @Autowired
-    DonorRepository donorRepository;
+    private DonorRepository donorRepository;
 
     @Autowired
-    BloodBagRepository bloodBagRepository;
+    private BloodBagRepository bloodBagRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     //Dang ky tham gia
     public String registration(Integer eventId, Integer donorId) {
@@ -72,7 +72,26 @@ public class RegistrationService {
         return "Đăng ký thành công";
     }
 
-    //Xem ve da dang ky
+    public List<TicketSummaryResponse> getAllMyTickets() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+
+        Users currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Không xác nhận được danh tính người dùng"));
+
+        Donor currentDonor = donorRepository.findByUser(currentUser)
+                .orElseThrow(() -> new RuntimeException("Tài khoản chưa được liên kết với hồ sơ hiến máu"));
+
+        List<EventRegistration> registrations = eventRegistrationRepository.findByDonor_DonorIdOrderByCreatedAtDesc(currentDonor.getDonorId());
+        return registrations.stream().map(reg -> TicketSummaryResponse.builder()
+                .eventId(reg.getEvents().getEventId())
+                .eventName(reg.getEvents().getEventName())
+                .startDate(reg.getEvents().getStartDate())
+                .status(reg.getEvents().getStatus())
+                .build()).collect(Collectors.toList());
+    }
+
+    //Xem chi tiet ve da dang ky
     public TicketResponse getMyTickets(Integer eventId, Integer donorId) {
         EventRegistration registration = eventRegistrationRepository.findByEvents_EventIdAndDonor_DonorId(eventId, donorId)
                 .orElseThrow(() -> new RuntimeException("Bạn chưa đăng ký tham gia sự kiện"));
@@ -84,8 +103,30 @@ public class RegistrationService {
                 .eventName(registration.getEvents().getEventName())
                 .ticketCode(code)
                 .qrCode(qrCode)
+                .donorName(registration.getDonor().getFullName())
+                .startDate(registration.getEvents().getStartDate())
+                .endDate(registration.getEvents().getEndDate())
                 .status(registration.getStatus())
                 .build();
+    }
+
+    public List<DonorResponse> getAllDonorsOfEvent(Integer eventId) {
+        Events events = eventRepository.findById(eventId).orElseThrow(() -> new RuntimeException("Không tìm thấy sự kiện"));
+        List<EventRegistration> registrations = eventRegistrationRepository.findByEvents_EventId(eventId);
+        return registrations.stream().map(reg -> {
+            Donor donor = reg.getDonor();
+            return DonorResponse.builder()
+                    .regisId(reg.getRegistrationId())
+                    .donorId(donor.getDonorId())
+                    .ticketCode(reg.getTicketCode())
+                    .fullName(donor.getFullName())
+                    .gender(donor.getGender())
+                    .dob(donor.getDob())
+                    .phone(donor.getPhone())
+                    .address(donor.getAddress())
+                    .status(reg.getStatus())
+                    .build();
+        }).collect(Collectors.toList());
     }
 
     //Checkin tai quay
@@ -94,10 +135,9 @@ public class RegistrationService {
         EventRegistration eventRegistration = eventRegistrationRepository.findByTicketCode(ticketCode)
                 .orElseThrow(() -> new RuntimeException("Vé không tồn tại"));
 
-        Events event =eventRepository.findById(eventId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy sự kiện"));
+        Events event = eventRegistration.getEvents();
 
-        if (!eventRegistration.getEvents().getEventId().equals(eventId)){
+        if (!event.getEventId().equals(eventId)){
             throw new RuntimeException("Vé hợp lệ nhưng không đúng sự kiện");
         }
 
@@ -123,11 +163,15 @@ public class RegistrationService {
         eventRegistrationRepository.save(eventRegistration);
 
         return DonorResponse.builder()
+                .regisId(eventRegistration.getRegistrationId())
+                .donorId(eventRegistration.getDonor().getDonorId())
+                .ticketCode(eventRegistration.getTicketCode())
                 .fullName(eventRegistration.getDonor().getFullName())
                 .gender(eventRegistration.getDonor().getGender())
                 .dob(eventRegistration.getDonor().getDob())
                 .address(eventRegistration.getDonor().getAddress())
                 .phone(eventRegistration.getDonor().getPhone())
+                .status(eventRegistration.getStatus())
                 .build();
     }
 
@@ -199,20 +243,22 @@ public class RegistrationService {
         }
 
         int realVolume = calculateNominalVolume(registration.getExpectedVolume(), rq.getActualVolume());
+        if (rq.getIsSuccess().equals(true)) {
+            BloodBag newBag = new BloodBag();
+            newBag.setRegistration(registration);
+            newBag.setCollectedAt(LocalDateTime.now());
+            newBag.setProductType("MAU_TOAN_PHAN");
+            newBag.setStorageEquipment(null);
+            newBag.setVolume(realVolume);
+            newBag.setStatus("CHO_XET_NGHIEM");
+            bloodBagRepository.save(newBag);
 
-        BloodBag newBag = new BloodBag();
-        newBag.setRegistration(registration);
-        newBag.setCollectedAt(LocalDateTime.now());
-        newBag.setProductType("MAU_TOAN_PHAN");
-        newBag.setStorageEquipment(null);
-        newBag.setVolume(realVolume);
-        newBag.setStatus("CHO_XET_NGHIEM");
-        bloodBagRepository.save(newBag);
-
-        registration.setStatus("DA_HIEN");
-        registration.setActualVolume(rq.getActualVolume());
-        eventRegistrationRepository.save(registration);
-
+            registration.setStatus("DA_HIEN");
+            registration.setActualVolume(rq.getActualVolume());
+            eventRegistrationRepository.save(registration);
+        } else if (rq.getIsSuccess().equals(false)) {
+            return "Lấy máu thất bại";
+        }
         return "Lấy máu thành công";
     }
 }

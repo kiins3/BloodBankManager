@@ -18,4 +18,8 @@ public interface EventRegistrationRepository  extends CrudRepository<EventRegist
     Optional<EventRegistration> findByTicketCode(String ticketcode);
 
     List<EventRegistration> findByEvents_EventIdAndStatus(Integer eventId, String status);
+
+    List<EventRegistration> findByDonor_DonorIdOrderByCreatedAtDesc(Integer donorId);
+
+    List<EventRegistration> findByEvents_EventId(Integer eventId);
 }

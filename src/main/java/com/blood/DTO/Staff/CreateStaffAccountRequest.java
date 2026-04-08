@@ -18,7 +18,6 @@ public class CreateStaffAccountRequest {
 
     private String password;
 
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate dob;
 
     private String cccd;
@@ -26,6 +25,8 @@ public class CreateStaffAccountRequest {
     private String gender;
 
     private String phone;
+
+    private String role;
 
     private String position;
 

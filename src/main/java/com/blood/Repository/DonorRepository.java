@@ -29,4 +29,5 @@ public interface DonorRepository extends JpaRepository<Donor,Integer> {
         """, nativeQuery = true)    List<Donor> findEligibleDonorsToCall(@Param("bloodType") String bloodType,
                                          @Param("rhFactor") String rhFactor,
                                          @Param("thresholdDate") LocalDateTime thresholdDate);
+
 }
