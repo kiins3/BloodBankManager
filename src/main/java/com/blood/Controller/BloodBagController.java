@@ -1,5 +1,6 @@
 package com.blood.Controller;
 
+import com.blood.DTO.Blood.BloodBagDetailResponse;
 import com.blood.DTO.Blood.ListBloodBagResponse;
 import com.blood.DTO.Blood.SeparateBloodRequest;
 import com.blood.DTO.Blood.TestRequest;
@@ -32,20 +33,29 @@ public class BloodBagController {
         }
     }
 
-    @PostMapping("/test-result/{bloodBagId}")
-    public ResponseEntity<?> testResult(@PathVariable Integer bloodBagId, @RequestBody TestRequest rq) {
+    @GetMapping("/get-blood-bag-detail/{bloodBagId}")
+    public ResponseEntity<?> getbloodbagdetail(@PathVariable Integer bloodBagId) {
         try {
-            String message = bloodBagService.testResult(bloodBagId, rq);
-            return ResponseEntity.ok(message);
+            BloodBagDetailResponse response = bloodBagService.getBloodbagDetails(bloodBagId);
+            return ResponseEntity.ok().body(response);
+        } catch (RuntimeException e) {
+            return  ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/test-result/{bloodBagId}")
+    public ResponseEntity<?> testResult(@PathVariable Integer bloodBagId, @RequestBody TestRequest rq, @RequestParam (defaultValue = "false") boolean forceUpdate) {
+        try {
+            return bloodBagService.testResult(bloodBagId, rq, forceUpdate);
         } catch (Exception e) {
             return  ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    @PostMapping("/send-mail/{test_id}")
-    public ResponseEntity<?> sendEmail(@PathVariable Integer test_id, @RequestParam (defaultValue = "false") boolean forceResend) {
+    @PostMapping("/send-mail/{bloodBagId}")
+    public ResponseEntity<?> sendEmail(@PathVariable Integer bloodBagId, @RequestParam (defaultValue = "false") boolean forceResend) {
         try {
-            return bloodBagService.sendEmail(test_id, forceResend);
+            return bloodBagService.sendEmail(bloodBagId, forceResend);
         } catch (Exception e) {
             return  ResponseEntity.badRequest().body(e.getMessage());
         }

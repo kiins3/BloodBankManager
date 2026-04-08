@@ -1,20 +1,18 @@
-package com.blood.DTO.Profile;
+package com.blood.DTO.Hospital;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class GetHospitalProfileResponse {
-    private Integer hospitalId;
-
-    private String email;
-
+@Builder
+public class HospitalResponse {
     private String hospitalName;
-
-    private String hotline;
-
     private String address;
+    private String hotline;
+    private String email;
+    private String status;
 }

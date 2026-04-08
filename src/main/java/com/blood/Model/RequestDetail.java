@@ -17,7 +17,7 @@ public class RequestDetail {
     @Column(name = "detail_id")
     private Integer detailId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "request_id")
     private BloodRequest bloodRequest;
 

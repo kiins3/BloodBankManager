@@ -23,6 +23,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 public class AuthService {
     @Autowired
@@ -70,6 +72,7 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode("123456"));
         user.setRole("DONOR");
         user.setStatus("ACTIVE");
+        user.setCreatedAt(LocalDateTime.now());
 
         Users savedUser = userRepository.save(user);
 
@@ -79,6 +82,7 @@ public class AuthService {
         donor.setEmail(rq.getEmail());
         donor.setCccd(rq.getCccd());
         donor.setPhone(rq.getPhone());
+        donor.setStatus("ACTIVE");
         donorRepository.save(donor);
 
         return ResponseEntity.ok("Đăng ký thành công");

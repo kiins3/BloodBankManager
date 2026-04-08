@@ -14,6 +14,12 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DonorResponse {
+    private Integer regisId;
+
+    private Integer donorId;
+
+    private String ticketCode;
+
     private String fullName;
 
     private String gender;
@@ -23,6 +29,8 @@ public class DonorResponse {
     private String phone;
 
     private String address;
+
+    private String status;
 
     private LocalDateTime lastDonationDate;
 }

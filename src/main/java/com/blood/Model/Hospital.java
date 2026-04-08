@@ -19,7 +19,7 @@ public class Hospital {
     @Column (name = "hospital_id")
     private Integer hospitalId;
 
-    @OneToOne
+    @OneToOne (fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "user_id", unique = true)
     private Users user;
 

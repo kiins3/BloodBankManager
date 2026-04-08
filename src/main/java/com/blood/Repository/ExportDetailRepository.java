@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ExportDetailRepository extends JpaRepository<ExportDetail,Integer> {
+    boolean existsByBloodBag_BloodBagIdAndExportLog_BloodRequest_RequestId(Integer bloodBagId, Integer requestId);
 }

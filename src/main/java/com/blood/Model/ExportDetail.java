@@ -16,7 +16,7 @@ public class ExportDetail {
     @Column(name = "detail_id")
     private Integer detailId;
 
-    @ManyToOne
+    @ManyToOne (fetch = FetchType.LAZY)
     @JoinColumn(name = "log_id")
     @JsonIgnore
     private ExportLog  exportLog;

@@ -1,5 +1,6 @@
 package com.blood.Service;
 
+import com.blood.DTO.Blood.BloodBagDetailResponse;
 import com.blood.DTO.Blood.ListBloodBagResponse;
 import com.blood.DTO.Blood.SeparateBloodRequest;
 import com.blood.DTO.Blood.TestRequest;
@@ -9,6 +10,7 @@ import com.blood.helper.QRCodeGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,10 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -77,9 +76,47 @@ public class BloodBagService {
         })
                 .collect(Collectors.toList());
     }
+    @Transactional (readOnly = true)
+    public BloodBagDetailResponse getBloodbagDetails(Integer bloodBagId) {
+        BloodBag bloodBag = bloodBagRepository.findById(bloodBagId).orElseThrow(() -> new RuntimeException("Không tìm thấy túi máu"));
+        Donor donor = bloodBag.getRegistration().getDonor();
+        Optional<TestResult> testResultOpt = testResultRepository.findByBloodBag(bloodBag);
+
+        BloodBagDetailResponse dto = new BloodBagDetailResponse();
+
+        dto.setDonorName(donor.getFullName());
+        dto.setCollectedAt(bloodBag.getCollectedAt());
+        dto.setActualVolume(bloodBag.getVolume());
+        dto.setExpirationDate(bloodBag.getExpiredAt());
+        dto.setBloodType(bloodBag.getBloodType());
+        dto.setRhFactor(bloodBag.getRhFactor());
+
+          if (testResultOpt.isPresent()) {
+            TestResult testResult = testResultOpt.get();
+            dto.setHiv(testResult.getHiv());
+            dto.setHbv(testResult.getHbv());
+            dto.setHcv(testResult.getHcv());
+            dto.setSyphilis(testResult.getSyphilis());
+            dto.setMalaria(testResult.getMalaria());
+            dto.setFinalConclusion(testResult.getFinalConclusion());
+        } else {
+            dto.setHiv("Chưa có");
+            dto.setHbv("Chưa có");
+            dto.setHcv("Chưa có");
+            dto.setSyphilis("Chưa có");
+            dto.setMalaria("Chưa có");
+            dto.setFinalConclusion("CHƯA XÉT NGHIỆM");
+        }
+
+        dto.setStorageLocation(bloodBag.getSafeStorageEquipmentName());
+        dto.setStatus(bloodBag.getStatus());
+        dto.setProductType(bloodBag.getProductType());
+
+        return dto;
+    }
 
     @Transactional
-    public String testResult(Integer bloodBagId, TestRequest rq) {
+    public ResponseEntity<?> testResult(Integer bloodBagId, TestRequest rq, boolean forceUpdate) {
         BloodBag bloodBag = bloodBagRepository.findById(bloodBagId).orElseThrow(() -> new RuntimeException("Không tìm thấy túi máu"));
 
         String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -88,12 +125,21 @@ public class BloodBagService {
                 -> new RuntimeException("Không tìm thấy nhân viên"));
 
         Donor donor = bloodBag.getRegistration().getDonor();
+        Optional<TestResult> existingTestResult = testResultRepository.findByBloodBag(bloodBag);
 
-        if (!bloodBag.getStatus().equalsIgnoreCase("CHO_XET_NGHIEM")) {
+        if (existingTestResult.isPresent() && !forceUpdate) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "CONFIRM_REQUIRED");
+            response.put("message", "Túi máu này đã có kết quả xét nghiệm trước đó. Bạn có chắc chắn muốn ghi đè kết quả mới không?");
+
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        }
+
+        if (!existingTestResult.isPresent() && !bloodBag.getStatus().equalsIgnoreCase("CHO_XET_NGHIEM")) {
             throw new RuntimeException("Túi máu không hợp lệ");
         }
 
-        TestResult testResult = new TestResult();
+        TestResult testResult = existingTestResult.orElse(new TestResult());
 
         testResult.setBloodBag(bloodBag);
         bloodBag.setBloodType(rq.getBloodType());
@@ -124,14 +170,14 @@ public class BloodBagService {
 
         testResultRepository.save(testResult);
         bloodBagRepository.save(bloodBag);
-        return "Cập nhật thành công";
+        return ResponseEntity.ok("Cập nhật thành công");
     }
 
-    public ResponseEntity<?> sendEmail(Integer test_id, boolean forceResend) {
-        TestResult testResult = testResultRepository.findById(test_id).orElseThrow(() -> new RuntimeException("Không tìm thấy kết quả"));
-        BloodBag bloodBag = testResult.getBloodBag();
-
+    public ResponseEntity<?> sendEmail(Integer bloodBagId, boolean forceResend) {
+        BloodBag bloodBag = bloodBagRepository.findById(bloodBagId).orElseThrow(() -> new RuntimeException("Không tìm thấy túi máu"));
+        TestResult testResult = bloodBag.getTestResult();
         Donor donor = bloodBag.getRegistration().getDonor();
+
         if (donor == null) {
             throw new RuntimeException("Túi máu chưa được gắn với người hiến nào");
         }
@@ -305,6 +351,7 @@ public class BloodBagService {
             redCellBag.setExpiredAt(bloodBag.getCollectedAt().plusDays(42));
             redCellBag.setTestResult(bloodBag.getTestResult());
             redCellBag.setRegistration(bloodBag.getRegistration());
+            redCellBag.setTestResult(bloodBag.getTestResult());
             redCellBag.setStatus("CHO_BAO_QUAN");
             bloodBagRepository.save(redCellBag);
         }
@@ -322,6 +369,7 @@ public class BloodBagService {
             plasma.setExpiredAt(bloodBag.getCollectedAt().plusDays(365));
             plasma.setTestResult(bloodBag.getTestResult());
             plasma.setRegistration(bloodBag.getRegistration());
+            plasma.setTestResult(bloodBag.getTestResult());
             plasma.setStatus("CHO_BAO_QUAN");
             bloodBagRepository.save(plasma);
         }
@@ -340,6 +388,7 @@ public class BloodBagService {
             plateletsBag.setExpiredAt(bloodBag.getCollectedAt().plusDays(5));
             plateletsBag.setTestResult(bloodBag.getTestResult());
             plateletsBag.setRegistration(bloodBag.getRegistration());
+            plateletsBag.setTestResult(bloodBag.getTestResult());
             plateletsBag.setStatus("CHO_BAO_QUAN");
 
             bloodBagRepository.save(plateletsBag);
@@ -353,6 +402,11 @@ public class BloodBagService {
 
     @Transactional
     public String storageBlood(List<Integer> bloodBagId, Integer equipmentId) {
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        Users user = userRepository.findByEmail(currentUsername).orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên"));
+        Staff staff = staffRepository.findByUser(user).orElseThrow(()
+                -> new RuntimeException("Không tìm thấy nhân viên"));
+
         StorageEquipment storageEquipment = storageEquipmentRepository.findById(equipmentId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy tủ lưu"));
 
@@ -365,6 +419,8 @@ public class BloodBagService {
                     (storageEquipment.getMaxCapacity() - currentLoad) + " chỗ trống");
         }
 
+        LocalDateTime currentTime = LocalDateTime.now();
+
         for (BloodBag bag : bloodBag) {
             if (!bag.getStatus().equals("CHO_BAO_QUAN")){
                 throw new RuntimeException("Túi máu " + bag.getBloodBagId() + " không hợp lệ để nhập kho");
@@ -376,6 +432,8 @@ public class BloodBagService {
 
             bag.setStorageEquipment(storageEquipment);
             bag.setStatus("SAN_SANG");
+            bag.setStoredAt(currentTime);
+            bag.setStaff(staff);
         }
 
         bloodBagRepository.saveAll(bloodBag);
@@ -384,14 +442,15 @@ public class BloodBagService {
     }
 
     public String discardBlood(List<Integer> bloodBagId) {
-        List<BloodBag> bloodBag = bloodBagRepository.findAllById(bloodBagId);
-        for (BloodBag bag : bloodBag) {
-            if (!bag.getStatus().equals("CHO_HUY")) {
-                bag.setStatus("DA_HUY");
-                bloodBagRepository.save(bag);
+        List<BloodBag> bloodBags = bloodBagRepository.findAllById(bloodBagId);
+        for (BloodBag bag : bloodBags) {
+            if (!bag.getStatus().equalsIgnoreCase("CHO_HUY")) {
+                throw new RuntimeException("Túi máu #" + bag.getBloodBagId() + " đang ở trạng thái '" + bag.getStatus() + "'. Chỉ được phép hủy những túi máu đang 'Chờ hủy'.");
             }
+            bag.setStatus("DA_HUY");
         }
-        return "Cập nhật thành công";
+        bloodBagRepository.saveAll(bloodBags);
+        return "Đã hủy thành công " + bloodBags.size() + " túi máu";
     }
 
 }

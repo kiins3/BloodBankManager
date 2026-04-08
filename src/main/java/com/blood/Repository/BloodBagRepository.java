@@ -1,6 +1,7 @@
 package com.blood.Repository;
 
 import com.blood.Model.BloodBag;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -24,4 +25,22 @@ public interface BloodBagRepository extends JpaRepository<BloodBag,Integer> {
                                    @Param("status") String status);
 
     int countByStorageEquipment_EquipmentId(Integer equipmentId);
+
+    Optional<BloodBag> findByBagCode(String bagCode);
+
+    @Query("SELECT b FROM BloodBag b " +
+            "WHERE b.status = 'SAN_SANG' " +
+            "AND b.expiredAt > CURRENT_TIMESTAMP " +
+            "AND b.productType = :productType " +
+            "AND b.bloodType = :bloodType " +
+            "AND b.rhFactor = :rhFactor " +
+            "AND b.volume = :volume " +
+            "ORDER BY b.expiredAt ASC")
+    List<BloodBag> findBagsForExport(
+            @Param("productType") String productType,
+            @Param("bloodType") String bloodType,
+            @Param("rhFactor") String rhFactor,
+            @Param("volume") Integer volume,
+            Pageable pageable
+    );
 }
