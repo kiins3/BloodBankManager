@@ -1,5 +1,6 @@
 package com.blood.Service;
 
+import com.blood.DTO.Auth.ChangePasswordRequest;
 import com.blood.DTO.Hospital.CreateHospitalAccountRequest;
 import com.blood.DTO.Hospital.HospitalResponse;
 import com.blood.DTO.Profile.GetDonorProfileResponse;
@@ -127,5 +128,23 @@ public class UserService {
         staffRepository.save(staff);
 
         return "Đã thêm nhân viên mới";
+    }
+
+    public void changPassword (ChangePasswordRequest rq) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Users user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        if (!passwordEncoder.matches(rq.getOldPassword(), user.getPassword())) {
+            throw new RuntimeException("Mật khẩu cũ không đúng");
+        }
+        if (passwordEncoder.matches(rq.getNewPassword(), user.getPassword())) {
+            throw new RuntimeException("Mật khẩu mới phải khác mật khẩu cũ");
+        }
+        if (!rq.getNewPassword().equals(rq.getConfirmPassword())) {
+            throw new RuntimeException("Mật khẩu xác nhận phải giống mật khẩu mới");
+        }
+
+        user.setPassword(passwordEncoder.encode(rq.getNewPassword()));
+        userRepository.save(user);
     }
 }

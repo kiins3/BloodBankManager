@@ -11,6 +11,7 @@ import com.blood.Repository.DonorRepository;
 import com.blood.Repository.EventRegistrationRepository;
 import com.blood.Repository.UserRepository;
 import com.blood.Service.RegistrationService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/registration")
+@SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor
 public class RegistrationController {
     @Autowired

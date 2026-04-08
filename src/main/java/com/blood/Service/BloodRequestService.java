@@ -45,12 +45,14 @@ public class BloodRequestService {
     private StaffRepository staffRepository;
 
     @Transactional
-    public String requestBlood(Integer hospitalId, RequestBloodRequest rq){
-        Hospital hospital = hospitalRepository.findById(hospitalId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy bệnh viện"));
+    public String requestBlood(RequestBloodRequest rq){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
+        Users currentUser = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Không xác định danh tính người dùng"));
+        Hospital currentHospital = currentUser.getHospital();
 
         BloodRequest bloodRequest = new BloodRequest();
-        bloodRequest.setHospital(hospital);
+        bloodRequest.setHospital(currentHospital);
         bloodRequest.setRequestDate(LocalDateTime.now());
         bloodRequest.setDeadlineDate(rq.getDeadlineDate());
         bloodRequest.setPriority(rq.getPriority());
@@ -107,7 +109,6 @@ public class BloodRequestService {
         Users currentUser = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Không xác định danh tính người dùng"));
         Hospital currentHospital = hospitalRepository.findByUserId(currentUser.getId()).orElseThrow(() -> new RuntimeException("Tài khoản đang sử dụng không đúng của bệnh viện"));
         Integer realHospitalId = currentHospital.getHospitalId();
-        System.out.println("hospital id : " + realHospitalId);
         List<BloodRequest> bloodRequests = bloodRequestRepository.findByHospital_HospitalId(realHospitalId);
         return bloodRequests.stream().map(requests -> {
             List<DetailRequest> detailRequests = requests.getRequestDetails().stream().map(details -> {

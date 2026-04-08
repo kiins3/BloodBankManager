@@ -2,25 +2,19 @@ package com.blood.Controller;
 
 import com.blood.DTO.Hospital.CreateHospitalAccountRequest;
 import com.blood.DTO.Staff.CreateStaffAccountRequest;
-import com.blood.Repository.DonorRepository;
-import com.blood.Repository.UserRepository;
 import com.blood.Service.UserService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/user")
-public class UserController {
+@RequestMapping("/api/admin/user")
+@SecurityRequirement(name = "bearerAuth")
+public class UserAdminController {
 
     @Autowired
     private UserService userService;
-
-    @GetMapping("/get-profile")
-    public ResponseEntity<?> GetMyProfile() {
-        return userService.getMyProfile();
-    }
 
     @PostMapping("/create-hospital-account")
     public ResponseEntity<?> CreateHospitalAccount(@RequestBody CreateHospitalAccountRequest rq) {
@@ -41,4 +35,5 @@ public class UserController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
 }

@@ -6,6 +6,7 @@ import com.blood.DTO.StorageEquipment.ListStorageEquipmentResponse;
 import com.blood.DTO.StorageEquipment.UpdateEquipmentRequest;
 import com.blood.Model.StorageEquipment;
 import com.blood.Service.StorageEquipmentService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/storage-equipment")
+@SecurityRequirement(name = "bearerAuth")
 public class StorageEquipmentController {
     @Autowired
     private StorageEquipmentService storageEquipmentService;
