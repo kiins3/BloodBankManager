@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/bloodbag")
+@RequestMapping("/api/staff/bloodbag")
 @SecurityRequirement(name = "bearerAuth")
 public class BloodBagController {
 
