@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/blood-request")
+@RequestMapping("/api/staff/blood-request")
 @SecurityRequirement(name = "bearerAuth")
-public class BloodRequestController {
+public class BloodRequestStaffController {
     @Autowired
     private BloodRequestService bloodRequestService;
     @Autowired
@@ -26,35 +26,6 @@ public class BloodRequestController {
         try {
             List<ListRequestBloodResponse> response = bloodRequestService.getListRequest(hospitalName, status);
             return ResponseEntity.ok().body(response);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    @GetMapping("/my-list-request")
-    public ResponseEntity<?> getMyBloodRequestList() {
-        try {
-            List<ListRequestBloodResponse> responses = bloodRequestService.getMyListRequest();
-            return ResponseEntity.ok().body(responses);
-        } catch (Exception e)  {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    @GetMapping("/detail/{requestId}")
-    public ResponseEntity<?> getRequestDetail(@PathVariable Integer requestId) {
-        try {
-            return ResponseEntity.ok().body(bloodRequestService.getRequestDetail(requestId));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
-
-    @PostMapping("/rq")
-    public ResponseEntity<?> requestBlood(@RequestBody RequestBloodRequest rq) {
-        try {
-            String message = bloodRequestService.requestBlood(rq);
-            return ResponseEntity.ok().body(message);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -80,7 +51,6 @@ public class BloodRequestController {
         }
     }
 
-
     @GetMapping("/list-suggested-bag/{requestId}")
     public ResponseEntity<?> listSuggestedBags(@PathVariable Integer requestId) {
         try {
@@ -100,13 +70,4 @@ public class BloodRequestController {
         }
     }
 
-    @PatchMapping("/track-order/{requestId}")
-    public ResponseEntity<?> trackOrder(@PathVariable Integer requestId) {
-        try {
-            String message = bloodRequestService.trackOrder(requestId);
-            return ResponseEntity.ok().body(message);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
 }
