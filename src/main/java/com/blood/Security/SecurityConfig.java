@@ -36,7 +36,7 @@ public class SecurityConfig {
     }
 
     private static final String[] PUBLIC_ENDPOINTS = {
-            "/api/auth/**",
+            "/auth/**",
             "/api/public/**",
             "/swagger-ui/**",
             "/swagger-ui.html",
@@ -51,8 +51,17 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/staff/**").hasAnyRole("STAFF_TECH", "STAFF_INVENTORY", "ADMIN")
+                        .requestMatchers("/api/donor/**").hasAnyRole("DONOR")
+                        .requestMatchers("/api/hospital/**").hasAnyRole("HOSPITAL")
+
+                        .requestMatchers("/api/shared/user/**").hasAnyRole("STAFF_TECH", "STAFF_INVENTORY", "DONOR", "HOSPITAL", "ADMIN")
+                        .requestMatchers("/api/shared/event/**").hasAnyRole("STAFF_TECH", "ADMIN", "DONOR")
+                        .requestMatchers("/api/shared/blood-request/**").hasAnyRole("HOSPITAL", "STAFF_INVENTORY", "ADMIN")
+
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

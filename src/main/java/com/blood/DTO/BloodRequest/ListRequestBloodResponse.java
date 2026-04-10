@@ -1,5 +1,6 @@
 package com.blood.DTO.BloodRequest;
 
+import com.blood.Model.BloodRequestStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +20,6 @@ public class ListRequestBloodResponse {
     private String priority;
     private LocalDate deadlineDate;
     private LocalDateTime requestedDate;
-    private String status;
+    private BloodRequestStatus status;
     private List<DetailRequest> detailRequests;
 }

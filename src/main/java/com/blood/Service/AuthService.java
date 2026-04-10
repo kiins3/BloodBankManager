@@ -1,9 +1,6 @@
 package com.blood.Service;
 
-import com.blood.DTO.Auth.ChangePasswordRequest;
-import com.blood.DTO.Auth.JwtResponse;
-import com.blood.DTO.Auth.LoginRequest;
-import com.blood.DTO.Auth.RegisterRequest;
+import com.blood.DTO.Auth.*;
 import com.blood.Model.Donor;
 import com.blood.Model.Hospital;
 import com.blood.Model.Staff;
@@ -15,6 +12,8 @@ import com.blood.Repository.UserRepository;
 import com.blood.Security.JwtTokenProvider;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,7 +22,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Random;
 
 @Service
 public class AuthService {
@@ -47,6 +48,11 @@ public class AuthService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private EmailService emailService;
+    @Autowired
+    private StringRedisTemplate redisTemplate;
 
     public ResponseEntity<?> login(LoginRequest rq) {
         Authentication authentication = authenticationManager.authenticate(
@@ -88,6 +94,40 @@ public class AuthService {
         return ResponseEntity.ok("Đăng ký thành công");
     }
 
+    public void generateAndSendOTP(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            throw new RuntimeException("Không được để trống email");
+        }
 
+        userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Email không đúng hoặc chưa được đăng ký"));
 
+        String otp = String.format("%06d", new Random().nextInt(999999));
+
+        redisTemplate.opsForValue().set(email, otp, Duration.ofMinutes(5));
+
+        String subject = "ĐẶT LẠI MẬT KHẨU";
+        String emailContent = "Mã xác nhận đặt lại mật khẩu của bạn là: " + otp + "\n"
+                            + "Mã này sẽ tự động hết hạn sau 5 phút.";
+
+        emailService.sendEmail(email, subject, emailContent);
+    }
+
+    public void verifyOTPAndResetPassword(ForgetPasswordRequest rq) {
+        String savedOtp = redisTemplate.opsForValue().get(rq.getEmail());
+
+        if (savedOtp == null) {
+            throw new RuntimeException("Mã OTP không chính xác");
+        }
+
+        if (rq.getNewPassword() == null || rq.getNewPassword().length() < 6) {
+            throw new RuntimeException("Mật khẩu mới phải có ít nhất 6 ký tự!");
+        }
+
+        Users user = userRepository.findByEmail(rq.getEmail()).orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+        user.setPassword(passwordEncoder.encode(rq.getNewPassword()));
+        userRepository.save(user);
+
+        redisTemplate.delete(rq.getEmail());
+    }
 }

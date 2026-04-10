@@ -1,5 +1,7 @@
 package com.blood.DTO.Blood;
 
+import com.blood.Model.BloodBagStatus;
+import com.blood.Model.ProductType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -31,8 +33,8 @@ public class BloodBagDetailResponse {
     private String storageLocation;
 
     @JsonProperty("status")
-    private String status;
+    private BloodBagStatus status;
 
     @JsonProperty("productType")
-    private String productType;
+    private ProductType productType;
 }

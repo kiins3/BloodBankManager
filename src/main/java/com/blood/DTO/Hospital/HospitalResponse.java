@@ -1,5 +1,6 @@
 package com.blood.DTO.Hospital;
 
+import com.blood.Model.UserStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,5 +15,5 @@ public class HospitalResponse {
     private String address;
     private String hotline;
     private String email;
-    private String status;
+    private UserStatus status;
 }

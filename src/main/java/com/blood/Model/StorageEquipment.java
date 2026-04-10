@@ -27,8 +27,9 @@ public class StorageEquipment {
     @Column(name = "standard")
     private String standard;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "product_type")
-    private String productType;
+    private ProductType productType;
 
     @Column(name = "max_capacity")
     private Integer maxCapacity;

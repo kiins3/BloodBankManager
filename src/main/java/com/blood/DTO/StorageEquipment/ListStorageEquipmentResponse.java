@@ -1,5 +1,6 @@
 package com.blood.DTO.StorageEquipment;
 
+import com.blood.Model.ProductType;
 import com.blood.Model.StorageEquipment;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,7 +14,7 @@ import lombok.NoArgsConstructor;
 public class ListStorageEquipmentResponse {
     private Integer equipmentId;
 
-    private String productType;
+    private ProductType productType;
 
     private Integer maxCapacity;
 

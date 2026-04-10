@@ -49,8 +49,9 @@ public class BloodBag {
     @Column(name = "rh_factor")
     private String rhFactor;
 
+   @Enumerated(EnumType.STRING)
     @Column(name = "product_type")
-    private String productType;
+    private ProductType productType;
 
     @Column(name = "volume")
     private Integer volume;
@@ -68,8 +69,9 @@ public class BloodBag {
     @Column(name = "stored_at")
     private LocalDateTime storedAt;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private String status;
+    private BloodBagStatus status;
 
     public String getSafeStorageEquipmentName() {
         if (this.storageEquipment != null) {

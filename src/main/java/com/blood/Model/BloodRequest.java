@@ -39,6 +39,7 @@ public class BloodRequest {
     @Column(name = "priority")
     private String priority;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private String status;
+    private BloodRequestStatus status;
 }

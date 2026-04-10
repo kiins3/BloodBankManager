@@ -29,8 +29,9 @@ public class Users {
     @Column (name = "role")
     private String role;
 
+    @Enumerated(EnumType.STRING)
     @Column (name = "status")
-    private String status;
+    private UserStatus status;
 
     @Column (name = "created_at")
     private LocalDateTime createdAt;

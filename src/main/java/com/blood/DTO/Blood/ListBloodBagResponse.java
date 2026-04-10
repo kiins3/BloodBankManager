@@ -1,5 +1,7 @@
 package com.blood.DTO.Blood;
 
+import com.blood.Model.BloodBagStatus;
+import com.blood.Model.ProductType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,7 +19,7 @@ public class ListBloodBagResponse {
     private String bloodType;
     private String rhFactor;
     private String bloodFactor;
-    private String productType;
+    private ProductType productType;
     private String storageLocation;
-    private String status;
+    private BloodBagStatus status;
 }

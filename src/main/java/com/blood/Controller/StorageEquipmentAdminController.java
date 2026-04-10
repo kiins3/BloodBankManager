@@ -1,10 +1,8 @@
 package com.blood.Controller;
 
-import com.blood.DTO.Blood.ListBloodBagResponse;
 import com.blood.DTO.StorageEquipment.CreateEquipmentRequest;
 import com.blood.DTO.StorageEquipment.ListStorageEquipmentResponse;
 import com.blood.DTO.StorageEquipment.UpdateEquipmentRequest;
-import com.blood.Model.StorageEquipment;
 import com.blood.Service.StorageEquipmentService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,22 +12,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/storage-equipment")
+@RequestMapping("/api/admin/storage-equipment")
 @SecurityRequirement(name = "bearerAuth")
-public class StorageEquipmentController {
+public class StorageEquipmentAdminController {
     @Autowired
     private StorageEquipmentService storageEquipmentService;
-
-    @GetMapping("/list-equipment")
-    public ResponseEntity<?> getStorageEquipmentList(@RequestParam(required = false) Integer bloodBagId,
-                                                     @RequestParam(required = false) String productType) {
-        try {
-            List<ListStorageEquipmentResponse> list = storageEquipmentService.getListStorageEquipment(bloodBagId, productType);
-            return ResponseEntity.ok().body(list);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
-    }
 
     @PostMapping("/create-equipment")
     public ResponseEntity<?> createStorageEquipment(@RequestBody CreateEquipmentRequest rq) {

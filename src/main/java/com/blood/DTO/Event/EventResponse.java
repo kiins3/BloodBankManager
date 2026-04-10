@@ -1,5 +1,6 @@
 package com.blood.DTO.Event;
 
+import com.blood.Model.EventStatus;
 import lombok.Builder;
 import lombok.Data;
 
@@ -22,6 +23,6 @@ public class EventResponse {
 
     private Integer currentAmount;
 
-    private String status;
+    private EventStatus status;
 
 }

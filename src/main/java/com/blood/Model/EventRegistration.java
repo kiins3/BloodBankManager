@@ -54,8 +54,9 @@ public class EventRegistration {
     @Column(name = "expected_volume")
     private Integer expectedVolume;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private String status;
+    private EventRegisStatus status;
 
     @Column(name = "rejection_reason")
     private String rejectionReason;

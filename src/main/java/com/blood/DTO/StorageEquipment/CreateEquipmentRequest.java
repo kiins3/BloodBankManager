@@ -1,5 +1,6 @@
 package com.blood.DTO.StorageEquipment;
 
+import com.blood.Model.ProductType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,7 +11,7 @@ import lombok.NoArgsConstructor;
 public class CreateEquipmentRequest {
     private String name;
 
-    private String productType;
+    private ProductType productType;
 
     private String standard;
 

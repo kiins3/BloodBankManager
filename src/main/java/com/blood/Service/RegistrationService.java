@@ -37,8 +37,11 @@ public class RegistrationService {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private EmailService emailService;
 
     //Dang ky tham gia
+    @Transactional
     public String registration(Integer eventId, Integer donorId) {
         Events event = eventRepository.findById(eventId).orElseThrow(() -> new RuntimeException("Sự kiện không tồn tại"));
 
@@ -48,10 +51,10 @@ public class RegistrationService {
 
         boolean alreadyRegistered = eventRegistrationRepository.existsByEvents_EventIdAndDonor_DonorId(eventId, donorId);
         if (alreadyRegistered) {
-            throw new RuntimeException("Bạn đã đăng ký tham rồi");
+            throw new RuntimeException("Bạn đã đăng ký tham gia rồi");
         }
 
-        int currentCount = eventRegistrationRepository.countByEvents_EventIdAndStatus(eventId, event.getStatus());
+        int currentCount = eventRegistrationRepository.countByEvents_EventIdAndStatus(eventId, "DA_DANG_KY");
         if (currentCount >= event.getTargetAmount()){
             throw new RuntimeException("Sự kiện này đã hết lượt đăng ký");
         }
@@ -68,6 +71,28 @@ public class RegistrationService {
         eventRegistration.setStatus("DA_DANG_KY");
 
         eventRegistrationRepository.save(eventRegistration);
+
+        if (donor.getEmail() != null && !donor.getEmail().isEmpty()){
+            String subject = "ĐĂNG KÝ THAM GIA HIẾN MÁU THÀNH CÔNG";
+
+            String base64QrCode = QRCodeGenerator.generateQRCode(eventRegistration.getTicketCode(), 250, 250);
+
+            String body = "<html><body>"
+                    + "<p>Cảm ơn bạn đã đăng ký tham gia chương trình hiến máu nhân đạo, dưới đây là thông tin vé của bạn:</p>"
+                    + "<ul>"
+                    + "<li><b>Chiến dịch:</b> " + eventRegistration.getEvents().getEventName() + "</li>"
+                    + "<li><b>Thời gian:</b> " + eventRegistration.getEvents().getStartDate() + "</li>"
+                    + "<li><b>Địa điểm:</b> " + eventRegistration.getEvents().getLocation() + "</li>"
+                    + "</ul>"
+                    + "<p><b>Vé của bạn:</b></p>"
+                    // Nhúng ảnh Base64 vào HTML
+                    + "<img src=\"data:image/png;base64," + base64QrCode + "\" alt=\"QR Code\" />"
+                    + "<p>Khi tới bạn hãy nhớ đem theo mã QR này hoặc CCCD để xác nhận thông tin.</p>"
+                    + "<p>Chúng tôi xin chân thành cảm ơn.</p>"
+                    + "</body></html>";
+
+            emailService.sendEmail(donor.getEmail(), subject, body);
+        }
 
         return "Đăng ký thành công";
     }

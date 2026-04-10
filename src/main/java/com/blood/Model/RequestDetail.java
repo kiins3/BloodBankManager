@@ -24,8 +24,9 @@ public class RequestDetail {
     @Column(name = "blood_type")
     private String bloodType;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "product_type")
-    private String productType;
+    private ProductType productType;
 
     @Column(name = "volume")
     private Integer volume;
