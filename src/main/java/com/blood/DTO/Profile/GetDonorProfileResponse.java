@@ -1,5 +1,6 @@
 package com.blood.DTO.Profile;
 
+import com.blood.Model.UserStatus;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -28,5 +29,5 @@ public class GetDonorProfileResponse {
 
     private String address;
 
-    private String status;
+    private UserStatus status;
 }

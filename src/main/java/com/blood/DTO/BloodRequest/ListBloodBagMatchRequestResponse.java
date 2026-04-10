@@ -1,5 +1,6 @@
 package com.blood.DTO.BloodRequest;
 
+import com.blood.Model.ProductType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
 @Builder
 public class ListBloodBagMatchRequestResponse {
     private Integer bloodBagId;
-    private String productType;
+    private ProductType productType;
     private String bloodType;
     private String rhFactor;
     private Integer volume;

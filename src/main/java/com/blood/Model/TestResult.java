@@ -26,20 +26,25 @@ public class TestResult {
     @JoinColumn(name = "technician_id")
     private Staff staff;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "hiv_result")
-    private String hiv;
+    private TestResultValue hiv;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "hbv_result")
-    private String hbv;
+    private TestResultValue hbv;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "hcv_result")
-    private String hcv;
+    private TestResultValue hcv;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "syphilis_result")
-    private String syphilis;
+    private TestResultValue syphilis;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "malaria_result")
-    private String malaria;
+    private TestResultValue malaria;
 
     @Column(name = "result_date")
     private LocalDateTime resultDate;

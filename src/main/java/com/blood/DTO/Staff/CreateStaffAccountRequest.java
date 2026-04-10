@@ -1,5 +1,7 @@
 package com.blood.DTO.Staff;
 
+import com.blood.Model.Position;
+import com.blood.Model.UserStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -28,7 +30,7 @@ public class CreateStaffAccountRequest {
 
     private String role;
 
-    private String position;
+    private Position position;
 
-    private String status;
+    private UserStatus status;
 }

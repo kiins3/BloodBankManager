@@ -1,6 +1,7 @@
 package com.blood.DTO.Event;
 
 
+import com.blood.Model.EventRegisStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -11,5 +12,5 @@ public class RegistrationResponse {
 
     private LocalDateTime createdAt;
 
-    private String status;
+    private EventRegisStatus status;
 }

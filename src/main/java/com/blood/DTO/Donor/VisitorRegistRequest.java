@@ -1,5 +1,6 @@
 package com.blood.DTO.Donor;
 
+import com.blood.Model.UserStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,5 +22,5 @@ public class VisitorRegistRequest {
     private String address;
     private String bloodType;
     private String rhFactor;
-    private String status;
+    private UserStatus status;
 }

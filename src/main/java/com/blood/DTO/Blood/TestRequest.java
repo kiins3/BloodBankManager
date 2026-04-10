@@ -1,5 +1,7 @@
 package com.blood.DTO.Blood;
 
+import com.blood.Model.TestResult;
+import com.blood.Model.TestResultValue;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,13 +18,13 @@ public class TestRequest {
 
     private String rhFactor;
 
-    private String hiv;
+    private TestResultValue hiv;
 
-    private String hbv;
+    private TestResultValue hbv;
 
-    private String hcv;
+    private TestResultValue hcv;
 
-    private String syphilis;
+    private TestResultValue syphilis;
 
-    private String malaria;
+    private TestResultValue malaria;
 }

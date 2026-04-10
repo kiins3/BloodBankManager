@@ -1,5 +1,6 @@
 package com.blood.DTO.BloodRequest;
 
+import com.blood.Model.ProductType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,7 @@ public class DetailRequest {
 
     private String bloodType;
 
-    private String productType;
+    private ProductType productType;
 
     private Integer volume;
 

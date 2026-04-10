@@ -1,5 +1,7 @@
 package com.blood.DTO.BloodRequest;
 
+import com.blood.Model.BloodRequestStatus;
+import com.blood.Model.ProductType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,7 +19,7 @@ public class RequestDetailResponse {
     private Integer requestId;
     private String hospitalName;
     private String priority;
-    private String status;
+    private BloodRequestStatus status;
     private LocalDate deadlineDate;
     private LocalDateTime requestedDate;
 
@@ -35,7 +37,7 @@ public class RequestDetailResponse {
         private Integer bloodBagId;
         private String bloodType;
         private String rhFactor;
-        private String productType;
+        private ProductType productType;
         private Integer volume;
         private LocalDateTime expiredAt;
         private String storageLocation;

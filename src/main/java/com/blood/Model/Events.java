@@ -35,8 +35,9 @@ public class Events {
     @Column (name = "target_amount")
     private Integer targetAmount;
 
+    @Enumerated(EnumType.STRING)
     @Column (name = "status")
-    private String status;
+    private EventStatus status;
 
     @OneToMany (mappedBy = "events", fetch = FetchType.LAZY)
     @JsonIgnore

@@ -52,6 +52,7 @@ public class Staff {
     @Column(name = "position")
     private String position;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private String status;
+    private Position status;
 }

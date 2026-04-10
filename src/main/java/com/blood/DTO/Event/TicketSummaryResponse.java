@@ -1,5 +1,6 @@
 package com.blood.DTO.Event;
 
+import com.blood.Model.EventRegisStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,5 +16,5 @@ public class TicketSummaryResponse {
     private Integer eventId;
     private String eventName;
     private LocalDateTime startDate;
-    private String status;
+    private EventRegisStatus status;
 }

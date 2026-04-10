@@ -1,5 +1,6 @@
 package com.blood.DTO.Donor;
 
+import com.blood.Model.UserStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -18,7 +19,7 @@ public class GetListDonorResponse {
 
     private String rhFactor;
 
-    private String userStatus;
+    private UserStatus userStatus;
 
     private Long totalDonations;
 
@@ -27,7 +28,7 @@ public class GetListDonorResponse {
     private String displayStatus;
 
     public GetListDonorResponse(Integer donorId, String fullName,String phone, String email,
-                                String bloodType, String rhFactor, String userStatus,
+                                String bloodType, String rhFactor, UserStatus userStatus,
                                 Long totalDonations, LocalDateTime lastDonationDate) {
         this.donorId = donorId;
         this.fullName = fullName;

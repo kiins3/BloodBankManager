@@ -1,5 +1,6 @@
 package com.blood.DTO.Event;
 
+import com.blood.Model.EventStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,6 +25,6 @@ public class CreateEventRequest {
 
     private Integer targetAmount;
 
-    private String status;
+    private EventStatus status;
 
 }

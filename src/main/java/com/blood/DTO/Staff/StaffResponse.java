@@ -1,5 +1,7 @@
 package com.blood.DTO.Staff;
 
+import com.blood.Model.Position;
+import com.blood.Model.UserStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,6 +20,6 @@ public class StaffResponse {
     private LocalDate dob;
     private String phone;
     private String email;
-    private String position;
-    private String status;
+    private Position position;
+    private UserStatus status;
 }
