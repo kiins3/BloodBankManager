@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,6 +51,9 @@ public interface BloodBagRepository extends JpaRepository<BloodBag,Integer> {
             "FROM BloodBag b WHERE b.status = 'SAN_SANG' " +
             "GROUP BY b.bloodType, b.rhFactor")
     List<BloodCountProjection> countAvailableBloodBags();
+
+    @Query("SELECT b FROM BloodBag b WHERE b.status = 'CHO_BAO_QUAN' AND b.expiredAt <= :threshold")
+    List<BloodBag> findExpiringAndExpiredBags(@Param("threshold") LocalDateTime threshold);
 }
 
 

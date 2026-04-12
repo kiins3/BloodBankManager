@@ -65,7 +65,7 @@ public class AuthService {
             String jwt = jwtTokenProvider.generateToken(user);
             return ResponseEntity.ok(new JwtResponse(jwt));
         } catch (org.springframework.security.core.AuthenticationException e) {
-            e.printStackTrace(); // Thêm dòng này để in ra lỗi thật sự ẩn bên dưới 401
+            e.printStackTrace();
             java.util.Map<String, String> response = new java.util.HashMap<>();
             response.put("message", "Email hoặc mật khẩu không chính xác!");
             return ResponseEntity.status(401).body(response);
