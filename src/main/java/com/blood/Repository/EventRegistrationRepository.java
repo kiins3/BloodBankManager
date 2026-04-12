@@ -23,4 +23,5 @@ public interface EventRegistrationRepository  extends CrudRepository<EventRegist
     List<EventRegistration> findByDonor_DonorIdOrderByCreatedAtDesc(Integer donorId);
 
     List<EventRegistration> findByEvents_EventId(Integer eventId);
+
 }

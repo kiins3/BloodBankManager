@@ -1,5 +1,6 @@
-package com.blood.helper;
+package com.blood.Config;
 
+import com.blood.Model.BloodBag;
 import com.blood.Repository.BloodBagRepository;
 import com.blood.Repository.BloodCountProjection;
 import com.blood.Service.EmailService;
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
@@ -68,7 +70,7 @@ public class InventoryAlertScheduler {
 
         if (needAlert) {
             String subject = "CẢNH BÁO KHO THIẾU MÁU";
-            alertMessage.append("<hr>"); // Đường kẻ ngang
+            alertMessage.append("<hr>");
             alertMessage.append("<p style='color: red; font-size: 16px;'><b>CẢNH BÁO NGHIÊM TRỌNG:</b></p>");
             alertMessage.append("<p>Có nhóm máu đang dưới mức an toàn (<strong>< ").append(alertThreshold).append(" túi</strong>).</p>");
             alertMessage.append("<p><i>Đề nghị ban quản trị tổ chức chiến dịch hiến máu gấp!</i></p>");
@@ -77,6 +79,60 @@ public class InventoryAlertScheduler {
             emailService.sendEmail(adminEmail, subject, alertMessage.toString());
         } else {
             System.out.println("Tổng kho hiện có " + totalAllBags + " túi. Các nhóm đều trên mức an toàn.");
+        }
+    }
+
+    @Scheduled(cron = "0 01 23 * * *")
+    public void alertExpiredBags() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime threshold = now.plusHours(48);
+
+        List<BloodBag> problemBags = bloodBagRepository.findExpiringAndExpiredBags(threshold);
+
+        if (!problemBags.isEmpty()) {
+            StringBuilder content = new StringBuilder();
+            content.append("<html><body style='font-family: Arial, sans-serif; line-height: 1.6;'>");
+            content.append("<h2 style='color: #d9534f;'>BÁO CÁO CẢNH BÁO HẠN SỬ DỤNG TÚI MÁU</h2>");
+            content.append("<p>Kính gửi bộ phận quản lý kho,</p>");
+            content.append("<p>Hệ thống ghi nhận các túi máu sau cần được xử lý gấp:</p>");
+
+            StringBuilder expiredContent = new StringBuilder();
+            expiredContent.append("<h3 style='color: #c9302c; border-bottom: 1px solid #c9302c; padding-bottom: 5px;'>❌ DANH SÁCH ĐÃ HẾT HẠN (CẦN TIÊU HỦY GẤP)</h3>");
+            expiredContent.append("<ul>");
+
+            StringBuilder expiringContent = new StringBuilder();
+            expiringContent.append("<h3 style='color: #f0ad4e; border-bottom: 1px solid #f0ad4e; padding-bottom: 5px;'>⚠️ DANH SÁCH SẮP HẾT HẠN (TRONG 48H TỚI)</h3>");
+            expiringContent.append("<ul>");
+
+            boolean hasExpired = false;
+            boolean hasExpiring = false;
+
+            for (BloodBag bag : problemBags) {
+                String bagInfo = String.format(
+                        "<li style='margin-bottom: 8px;'><strong>Mã:</strong> %s | <strong>Nhóm:</strong> <span style='color: red;'>%s%s</span> | <strong>Loại:</strong> %s | <strong>HSD:</strong> %s</li>",
+                        bag.getBagCode(), bag.getBloodType(), bag.getRhFactor(), bag.getProductType(), bag.getExpiredAt()
+                );
+
+                if (bag.getExpiredAt().isBefore(now)) {
+                    expiredContent.append(bagInfo);
+                    hasExpired = true;
+                } else {
+                    expiringContent.append(bagInfo);
+                    hasExpiring = true;
+                }
+            }
+
+            expiredContent.append("</ul>");
+            expiringContent.append("</ul>");
+
+            if (hasExpired) content.append(expiredContent);
+            if (hasExpiring) content.append(expiringContent);
+
+            content.append("<br><hr>");
+            content.append("<p style='font-size: 12px; color: #777;'><i>Đây là email tự động từ Hệ thống quản lý Ngân hàng máu. Vui lòng không trả lời email này.</i></p>");
+            content.append("</body></html>");
+
+            emailService.sendEmail("nthuphuong2004@gmail.com", "KHẨN CẤP: CẢNH BÁO HẠN SỬ DỤNG TÚI MÁU", content.toString());
         }
     }
 }
