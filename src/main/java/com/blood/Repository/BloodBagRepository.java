@@ -1,6 +1,8 @@
 package com.blood.Repository;
 
 import com.blood.Model.BloodBag;
+import com.blood.Model.BloodBagStatus;
+import com.blood.Model.ProductType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -21,8 +23,8 @@ public interface BloodBagRepository extends JpaRepository<BloodBag,Integer> {
     List<BloodBag> findWithFilters(@Param("bloodBagId") Integer bloodBagId,
                                    @Param("bloodType") String bloodType,
                                    @Param("rhFactor") String rhFactor,
-                                   @Param("productType") String productType,
-                                   @Param("status") String status);
+                                   @Param("productType") ProductType productType,
+                                   @Param("status") BloodBagStatus status);
 
     int countByStorageEquipment_EquipmentId(Integer equipmentId);
 
@@ -37,10 +39,17 @@ public interface BloodBagRepository extends JpaRepository<BloodBag,Integer> {
             "AND b.volume = :volume " +
             "ORDER BY b.expiredAt ASC")
     List<BloodBag> findBagsForExport(
-            @Param("productType") String productType,
+            @Param("productType") ProductType productType,
             @Param("bloodType") String bloodType,
             @Param("rhFactor") String rhFactor,
             @Param("volume") Integer volume,
             Pageable pageable
     );
+
+    @Query("SELECT b.bloodType as bloodType, b.rhFactor as rhFactor, COUNT(b) as total " +
+            "FROM BloodBag b WHERE b.status = 'SAN_SANG' " +
+            "GROUP BY b.bloodType, b.rhFactor")
+    List<BloodCountProjection> countAvailableBloodBags();
 }
+
+

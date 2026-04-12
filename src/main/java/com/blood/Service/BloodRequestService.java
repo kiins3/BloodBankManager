@@ -56,7 +56,7 @@ public class BloodRequestService {
         bloodRequest.setRequestDate(LocalDateTime.now());
         bloodRequest.setDeadlineDate(rq.getDeadlineDate());
         bloodRequest.setPriority(rq.getPriority());
-        bloodRequest.setStatus("CHO_DUYET");
+        bloodRequest.setStatus(BloodRequestStatus.CHO_DUYET);
         
         List<RequestDetail> requestDetails = new ArrayList<>();
         for (DetailRequest detailDTO: rq.getDetails()){
@@ -148,18 +148,18 @@ public class BloodRequestService {
             totalAproved += dto.getApprovedQuantity();
             totalRequested += detail.getQuantity();
         }
-        if (!bloodRequest.getStatus().equalsIgnoreCase("CHO_DUYET") && !bloodRequest.getStatus().equalsIgnoreCase("DA_TU_CHOI") && !bloodRequest.getStatus().equalsIgnoreCase("DA_DUYET_TOAN_BO") && !bloodRequest.getStatus().equalsIgnoreCase("DA_DUYET_MOT_PHAN")) {
+        if (bloodRequest.getStatus() != BloodRequestStatus.CHO_DUYET && bloodRequest.getStatus() != BloodRequestStatus.DA_TU_CHOI && bloodRequest.getStatus() != BloodRequestStatus.DA_DUYET_TOAN_BO && bloodRequest.getStatus() != BloodRequestStatus.DA_DUYET_MOT_PHAN) {
             throw new RuntimeException("Chỉ được duyệt các đơn đang chờ duyệt");
         }
 
         if (totalAproved > totalRequested) {
             throw new RuntimeException("Kiểm tra lại số lượng túi duyệt");
         } else if (totalAproved == 0) {
-            bloodRequest.setStatus("DA_TU_CHOI");
+            bloodRequest.setStatus(BloodRequestStatus.DA_TU_CHOI);
         } else if (totalAproved == totalRequested) {
-            bloodRequest.setStatus("DA_DUYET_TOAN_BO");
+            bloodRequest.setStatus(BloodRequestStatus.DA_DUYET_TOAN_BO);
         } else if (totalAproved < totalRequested) {
-            bloodRequest.setStatus("DA_DUYET_MOT_PHAN");
+            bloodRequest.setStatus(BloodRequestStatus.DA_DUYET_MOT_PHAN);
         }
         bloodRequestRepository.save(bloodRequest);
         return "Cập nhật thành công";
@@ -169,7 +169,7 @@ public class BloodRequestService {
         BloodRequest bloodRequest = bloodRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu máu"));
 
-        bloodRequest.setStatus("DA_NHAN");
+        bloodRequest.setStatus(BloodRequestStatus.DA_NHAN);
         bloodRequestRepository.save(bloodRequest);
         return "Cập nhật thành công";
     }
@@ -258,9 +258,9 @@ public class BloodRequestService {
                 throw new RuntimeException("Túi máu " + bagId + " đã quá hạn sử dụng, yêu cầu kiểm tra lại");
             }
 
-            boolean isReady = bloodBag.getStatus().equalsIgnoreCase("SAN_SANG");
-            boolean isEmergencyWholeBlood = bloodBag.getProductType().equalsIgnoreCase("MAU_TOAN_PHAN")
-                    && bloodBag.getStatus().equalsIgnoreCase("CHO_TACH_CHIET");
+            boolean isReady = bloodBag.getStatus() == BloodBagStatus.SAN_SANG;
+            boolean isEmergencyWholeBlood = bloodBag.getProductType() == ProductType.MAU_TOAN_PHAN
+                    && bloodBag.getStatus() == BloodBagStatus.CHO_TACH_CHIET;
 
             if (!isReady && !isEmergencyWholeBlood) {
                 throw new RuntimeException("Túi máu " + bagId + " chưa sẵn sàng để xuất kho");
@@ -276,14 +276,14 @@ public class BloodRequestService {
                     rqType = detail.getBloodType().substring(0, length - 1);
                 }
 
-                if (detail.getProductType().equalsIgnoreCase(bloodBag.getProductType()) && rqType.equalsIgnoreCase(bloodBag.getBloodType()) &&
+                if (detail.getProductType() == (bloodBag.getProductType()) && rqType.equalsIgnoreCase(bloodBag.getBloodType()) &&
                         rqRh.equalsIgnoreCase(bloodBag.getRhFactor()) && detail.getVolume().equals(bloodBag.getVolume())) {
                     int currentCount = scanCounts.get(detail.getDetailId());
                     if (currentCount < detail.getApprovedQuantity()) {
                         scanCounts.put(detail.getDetailId(), currentCount + 1);
                         isMatched = true;
 
-                        bloodBag.setStatus("DA_XUAT");
+                        bloodBag.setStatus(BloodBagStatus.DA_XUAT);
                         bloodBag.setStorageEquipment(null);
                         bagsToSave.add(bloodBag);
 
@@ -310,7 +310,7 @@ public class BloodRequestService {
         bloodBagRepository.saveAll(bagsToSave);
         exportDetailRepository.saveAll(exportDetailsToSave);
 
-        bloodRequest.setStatus("DANG_VAN_CHUYEN");
+        bloodRequest.setStatus(BloodRequestStatus.DANG_VAN_CHUYEN);
         bloodRequestRepository.save(bloodRequest);
 
         return "Xuất kho thành công";

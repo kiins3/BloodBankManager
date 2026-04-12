@@ -1,10 +1,7 @@
 package com.blood.Service;
 
 import com.blood.DTO.Auth.*;
-import com.blood.Model.Donor;
-import com.blood.Model.Hospital;
-import com.blood.Model.Staff;
-import com.blood.Model.Users;
+import com.blood.Model.*;
 import com.blood.Repository.DonorRepository;
 import com.blood.Repository.HospitalRepository;
 import com.blood.Repository.StaffRepository;
@@ -55,16 +52,29 @@ public class AuthService {
     private StringRedisTemplate redisTemplate;
 
     public ResponseEntity<?> login(LoginRequest rq) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        rq.getEmail(), rq.getPassword())
-        );
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            rq.getEmail(), rq.getPassword())
+            );
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        Users user = userRepository.findByEmail(rq.getEmail()).get();
-        String jwt = jwtTokenProvider.generateToken(user);
-        return ResponseEntity.ok(new JwtResponse(jwt));
+            Users user = userRepository.findByEmail(rq.getEmail())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy user"));
+            String jwt = jwtTokenProvider.generateToken(user);
+            return ResponseEntity.ok(new JwtResponse(jwt));
+        } catch (org.springframework.security.core.AuthenticationException e) {
+            e.printStackTrace(); // Thêm dòng này để in ra lỗi thật sự ẩn bên dưới 401
+            java.util.Map<String, String> response = new java.util.HashMap<>();
+            response.put("message", "Email hoặc mật khẩu không chính xác!");
+            return ResponseEntity.status(401).body(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            java.util.Map<String, String> response = new java.util.HashMap<>();
+            response.put("message", "Lỗi máy chủ khi đăng nhập");
+            return ResponseEntity.status(500).body(response);
+        }
     }
 
     @Transactional
@@ -76,8 +86,8 @@ public class AuthService {
         Users user = new Users();
         user.setEmail(rq.getEmail());
         user.setPassword(passwordEncoder.encode("123456"));
-        user.setRole("DONOR");
-        user.setStatus("ACTIVE");
+        user.setRole(Role.DONOR);
+        user.setStatus(UserStatus.ACTIVE);
         user.setCreatedAt(LocalDateTime.now());
 
         Users savedUser = userRepository.save(user);
@@ -88,7 +98,7 @@ public class AuthService {
         donor.setEmail(rq.getEmail());
         donor.setCccd(rq.getCccd());
         donor.setPhone(rq.getPhone());
-        donor.setStatus("ACTIVE");
+        donor.setStatus(UserStatus.ACTIVE);
         donorRepository.save(donor);
 
         return ResponseEntity.ok("Đăng ký thành công");

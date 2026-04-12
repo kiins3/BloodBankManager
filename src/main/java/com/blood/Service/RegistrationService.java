@@ -54,7 +54,7 @@ public class RegistrationService {
             throw new RuntimeException("Bạn đã đăng ký tham gia rồi");
         }
 
-        int currentCount = eventRegistrationRepository.countByEvents_EventIdAndStatus(eventId, "DA_DANG_KY");
+        int currentCount = eventRegistrationRepository.countByEvents_EventIdAndStatus(eventId, EventRegisStatus.DA_DANG_KY);
         if (currentCount >= event.getTargetAmount()){
             throw new RuntimeException("Sự kiện này đã hết lượt đăng ký");
         }
@@ -68,7 +68,7 @@ public class RegistrationService {
         eventRegistration.setDonor(donor);
         eventRegistration.setTicketCode(generatedCode);
         eventRegistration.setCreatedAt(LocalDateTime.now());
-        eventRegistration.setStatus("DA_DANG_KY");
+        eventRegistration.setStatus(EventRegisStatus.DA_DANG_KY);
 
         eventRegistrationRepository.save(eventRegistration);
 
@@ -184,7 +184,7 @@ public class RegistrationService {
             throw new RuntimeException("Sự kiện đã kết thúc");
         }
 
-        eventRegistration.setStatus("CHO_KHAM");
+        eventRegistration.setStatus(EventRegisStatus.CHO_KHAM);
         eventRegistrationRepository.save(eventRegistration);
 
         return DonorResponse.builder()
@@ -221,9 +221,9 @@ public class RegistrationService {
         eventRegistration.setRejectionReason(rq.getRejectionReason());
 
         if (rq.getIsEligible()) {
-            eventRegistration.setStatus("DONG_Y");
+            eventRegistration.setStatus(EventRegisStatus.DONG_Y);
         } else {
-            eventRegistration.setStatus("TU_CHOI");
+            eventRegistration.setStatus(EventRegisStatus.TU_CHOI);
         }
 
         eventRegistrationRepository.save(eventRegistration);
@@ -272,13 +272,13 @@ public class RegistrationService {
             BloodBag newBag = new BloodBag();
             newBag.setRegistration(registration);
             newBag.setCollectedAt(LocalDateTime.now());
-            newBag.setProductType("MAU_TOAN_PHAN");
+            newBag.setProductType(ProductType.MAU_TOAN_PHAN);
             newBag.setStorageEquipment(null);
             newBag.setVolume(realVolume);
-            newBag.setStatus("CHO_XET_NGHIEM");
+            newBag.setStatus(BloodBagStatus.CHO_XET_NGHIEM);
             bloodBagRepository.save(newBag);
 
-            registration.setStatus("DA_HIEN");
+            registration.setStatus(EventRegisStatus.DA_LAY_MAU);
             registration.setActualVolume(rq.getActualVolume());
             eventRegistrationRepository.save(registration);
         } else if (rq.getIsSuccess().equals(false)) {

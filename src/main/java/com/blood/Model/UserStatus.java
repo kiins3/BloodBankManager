@@ -2,5 +2,6 @@ package com.blood.Model;
 
 public enum UserStatus {
     ACTIVE,
-    INACTIVE
+    INACTIVE,
+    KHACH_VANG_LAI
 }

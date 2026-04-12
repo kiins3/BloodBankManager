@@ -2,16 +2,15 @@ package com.blood.Model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "Donor")
@@ -21,6 +20,7 @@ public class Donor {
     @Column (name = "donor_id")
     private Integer donorId;
 
+    @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn (name = "user_id", referencedColumnName = "user_id", unique = true)
     private Users user;
@@ -52,8 +52,9 @@ public class Donor {
     @Column (name = "address")
     private String address;
 
+    @Enumerated(EnumType.STRING)
     @Column (name = "status")
-    private String status;
+    private UserStatus status;
 
     @OneToMany (mappedBy = "donor")
     @JsonIgnore

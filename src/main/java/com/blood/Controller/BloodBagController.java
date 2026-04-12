@@ -1,10 +1,9 @@
 package com.blood.Controller;
 
-import com.blood.DTO.Blood.BloodBagDetailResponse;
-import com.blood.DTO.Blood.ListBloodBagResponse;
-import com.blood.DTO.Blood.SeparateBloodRequest;
-import com.blood.DTO.Blood.TestRequest;
+import com.blood.DTO.Blood.*;
 import com.blood.Model.BloodBag;
+import com.blood.Model.BloodBagStatus;
+import com.blood.Model.ProductType;
 import com.blood.Service.BloodBagService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +24,8 @@ public class BloodBagController {
     public ResponseEntity<?> getlistbloodbag(@RequestParam(required = false) Integer bloodBagId,
                                              @RequestParam(required = false) String bloodType,
                                              @RequestParam(required = false) String rhFactor,
-                                             @RequestParam(required = false) String productType,
-                                             @RequestParam(required = false) String status) {
+                                             @RequestParam(required = false) ProductType productType,
+                                             @RequestParam(required = false) BloodBagStatus status) {
         try {
             List<ListBloodBagResponse> list = bloodBagService.getListBloodBag(bloodBagId, bloodType, rhFactor, productType, status);
             return ResponseEntity.ok().body(list);
@@ -50,6 +49,16 @@ public class BloodBagController {
         try {
             return bloodBagService.testResult(bloodBagId, rq, forceUpdate);
         } catch (Exception e) {
+            return  ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/print-label/{bloodBagId}")
+    public ResponseEntity<?> printLabel(@PathVariable Integer bloodBagId) {
+        try {
+            PrintLabelBagResponse response = bloodBagService.printLabelBag(bloodBagId);
+            return  ResponseEntity.ok().body(response);
+        } catch (RuntimeException e) {
             return  ResponseEntity.badRequest().body(e.getMessage());
         }
     }

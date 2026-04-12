@@ -2,6 +2,7 @@ package com.blood.DTO.Blood;
 
 import com.blood.Model.BloodBagStatus;
 import com.blood.Model.ProductType;
+import com.blood.Model.TestResultValue;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -22,11 +23,13 @@ public class BloodBagDetailResponse {
     private String bloodType;
     private String rhFactor;
     private Integer actualVolume;
-    private String hiv;
-    private String hbv;
-    private String hcv;
-    private String syphilis;
-    private String malaria;
+    private String bagCode;
+    private String barcodeBase64;
+    private TestResultValue hiv;
+    private TestResultValue hbv;
+    private TestResultValue hcv;
+    private TestResultValue syphilis;
+    private TestResultValue malaria;
     private String finalConclusion;
 
     @JsonProperty("storageLocation")

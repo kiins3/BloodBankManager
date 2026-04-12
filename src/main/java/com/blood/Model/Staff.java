@@ -1,17 +1,17 @@
 package com.blood.Model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Table (name = "Staff")
@@ -21,6 +21,7 @@ public class Staff {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer staffId;
 
+    @JsonIgnore
     @OneToOne (fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "user_id",unique = true)
     private Users user;
@@ -49,10 +50,11 @@ public class Staff {
     @Column(name = "phone")
     private String phone;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "position")
-    private String position;
+    private Position position;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private Position status;
+    private UserStatus status;
 }

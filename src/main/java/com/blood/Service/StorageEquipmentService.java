@@ -3,6 +3,7 @@ package com.blood.Service;
 import com.blood.DTO.StorageEquipment.CreateEquipmentRequest;
 import com.blood.DTO.StorageEquipment.ListStorageEquipmentResponse;
 import com.blood.DTO.StorageEquipment.UpdateEquipmentRequest;
+import com.blood.Model.ProductType;
 import com.blood.Model.StorageEquipment;
 import com.blood.Repository.BloodBagRepository;
 import com.blood.Repository.StorageEquipmentRepository;
@@ -21,7 +22,7 @@ public class StorageEquipmentService {
     @Autowired
     private BloodBagRepository bloodBagRepository;
 
-    public List<ListStorageEquipmentResponse> getListStorageEquipment(Integer equipmentId, String productType){
+    public List<ListStorageEquipmentResponse> getListStorageEquipment(Integer equipmentId, ProductType productType){
         List<StorageEquipment> storageEquipment = storageEquipmentRepository.findWithFilter(equipmentId, productType);
 
         return storageEquipment.stream().map(equipment -> {
