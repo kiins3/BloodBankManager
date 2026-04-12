@@ -6,5 +6,6 @@ public enum EventRegisStatus {
     CHO_KHAM,
     DONG_Y,
     TU_CHOI,
-    DA_LAY_MAU
+    DA_LAY_MAU,
+    HOAN_THANH
 }

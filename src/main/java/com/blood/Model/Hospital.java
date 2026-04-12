@@ -1,14 +1,14 @@
 package com.blood.Model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Table (name = "Hospital")
@@ -19,6 +19,7 @@ public class Hospital {
     @Column (name = "hospital_id")
     private Integer hospitalId;
 
+    @JsonIgnore
     @OneToOne (fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "user_id", unique = true)
     private Users user;

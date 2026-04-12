@@ -2,18 +2,16 @@ package com.blood.Model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "Users")
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-
+@Table(name = "Users")
 public class Users {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,8 +24,9 @@ public class Users {
     @Column (name = "password")
     private String password;
 
+    @Enumerated(EnumType.STRING)
     @Column (name = "role")
-    private String role;
+    private Role role;
 
     @Enumerated(EnumType.STRING)
     @Column (name = "status")

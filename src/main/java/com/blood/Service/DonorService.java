@@ -5,10 +5,7 @@ import com.blood.DTO.Donor.DonorResponse;
 import com.blood.DTO.Donor.GetListDonorResponse;
 import com.blood.DTO.Donor.VisitorRegistRequest;
 import com.blood.DTO.Profile.UpdateDonorProfileRequest;
-import com.blood.Model.Donor;
-import com.blood.Model.EventRegistration;
-import com.blood.Model.Events;
-import com.blood.Model.Users;
+import com.blood.Model.*;
 import com.blood.Repository.DonorRepository;
 import com.blood.Repository.EventRegistrationRepository;
 import com.blood.Repository.EventRepository;
@@ -68,10 +65,10 @@ public class DonorService {
 
     public GetListDonorResponse convertToDTO(Donor donor){
         String email = "";
-        String userStatus = "ACTIVE";
+        UserStatus userStatus = UserStatus.ACTIVE;
         if (donor.getUser() != null) {
             email = donor.getUser().getEmail();
-            userStatus = donor.getUser().getStatus();
+            userStatus = donor.getStatus();
         }
 
         List <EventRegistration> history = donor.getRegistration();
@@ -80,7 +77,8 @@ public class DonorService {
 
         if (history != null && !history.isEmpty()) {
             List<EventRegistration> completedEvents = history.stream()
-                    .filter((reg -> "COMPLETED".equalsIgnoreCase(reg.getStatus()))).toList();
+                    .filter(reg -> reg.getStatus() == EventRegisStatus.HOAN_THANH)
+                    .toList();
 
             totalDonations = completedEvents.size();
 
@@ -96,7 +94,7 @@ public class DonorService {
                 email,
                 donor.getBloodType(),
                 donor.getRhFactor(),
-                userStatus,
+                donor.getUser().getStatus(),
                 totalDonations,
                 lastDonationDate
         );
@@ -141,7 +139,7 @@ public class DonorService {
             if (rq.getRhFactor() != null && rq.getRhFactor().trim().isEmpty()) {
                 donor.setRhFactor(null);
             }
-            donor.setStatus("KHACH_VANG_LAI");
+            donor.setStatus(UserStatus.KHACH_VANG_LAI);
             donor = donorRepository.save(donor);
         } else {
             donor.setPhone(rq.getPhone());
@@ -153,7 +151,7 @@ public class DonorService {
         EventRegistration eventRegistration = new EventRegistration();
         eventRegistration.setDonor(donor);
         eventRegistration.setEvents(event);
-        eventRegistration.setStatus("CHO_KHAM");
+        eventRegistration.setStatus(EventRegisStatus.CHO_KHAM);
         eventRegistration = eventRegistrationRepository.save(eventRegistration);
 
         if (rq.getEmail() != null && !rq.getEmail().isEmpty()) {

@@ -1,5 +1,6 @@
 package com.blood.Repository;
 
+import com.blood.Model.EventRegisStatus;
 import com.blood.Model.EventRegistration;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
@@ -11,7 +12,7 @@ import java.util.Optional;
 public interface EventRegistrationRepository  extends CrudRepository<EventRegistration, Integer> {
     boolean existsByEvents_EventIdAndDonor_DonorId(Integer eventId, Integer donorId);
 
-    int countByEvents_EventIdAndStatus(Integer eventId, String status);
+    int countByEvents_EventIdAndStatus(Integer eventId, EventRegisStatus status);
 
     Optional<EventRegistration> findByEvents_EventIdAndDonor_DonorId(Integer eventid, Integer donorid);
 

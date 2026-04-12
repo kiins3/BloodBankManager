@@ -44,6 +44,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 //5. Kiem tra nguoi dung hop le
                 if (userDetails != null) {
+                    System.out.println("--- TÌM THẤY USER: " + userDetails.getUsername());
+                    System.out.println("--- DANH SÁCH QUYỀN CỦA USER NÀY LÀ: " + userDetails.getAuthorities());
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                             userDetails, null, userDetails.getAuthorities());
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

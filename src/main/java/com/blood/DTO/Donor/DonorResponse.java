@@ -1,5 +1,7 @@
 package com.blood.DTO.Donor;
 
+import com.blood.Model.EventRegisStatus;
+import com.blood.Model.UserStatus;
 import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,7 +32,7 @@ public class DonorResponse {
 
     private String address;
 
-    private String status;
+    private EventRegisStatus status;
 
     private LocalDateTime lastDonationDate;
 }

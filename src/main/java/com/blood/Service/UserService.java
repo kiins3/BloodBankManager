@@ -8,10 +8,7 @@ import com.blood.DTO.Profile.GetHospitalProfileResponse;
 import com.blood.DTO.Profile.UpdateDonorProfileRequest;
 import com.blood.DTO.Profile.UpdateHospitalProfileRequest;
 import com.blood.DTO.Staff.CreateStaffAccountRequest;
-import com.blood.Model.Donor;
-import com.blood.Model.Hospital;
-import com.blood.Model.Staff;
-import com.blood.Model.Users;
+import com.blood.Model.*;
 import com.blood.Repository.DonorRepository;
 import com.blood.Repository.HospitalRepository;
 import com.blood.Repository.StaffRepository;
@@ -47,7 +44,7 @@ public class UserService {
         Users user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
 
-        if (user.getRole().equalsIgnoreCase("DONOR")) {
+        if (user.getRole() == Role.DONOR) {
             Donor donor = donorRepository.findByUser(user).orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
 
             GetDonorProfileResponse response = new GetDonorProfileResponse();
@@ -90,8 +87,8 @@ public class UserService {
         user.setEmail(rq.getEmail());
         user.setPassword(passwordEncoder.encode("123456"));
         user.setCreatedAt(LocalDateTime.now());
-        user.setRole("HOSPITAL");
-        user.setStatus("ACTIVE");
+        user.setRole(Role.HOSPITAL);
+        user.setStatus(UserStatus.ACTIVE);
         hospital.setUser(user);
         hospital.setHospitalName(rq.getHospitalName());
         hospital.setAddress(rq.getAddress());
@@ -114,7 +111,7 @@ public class UserService {
         user.setPassword(passwordEncoder.encode("123456"));
         user.setCreatedAt(LocalDateTime.now());
         user.setRole(rq.getRole());
-        user.setStatus("ACTIVE");
+        user.setStatus(UserStatus.ACTIVE);
         Staff staff = new Staff();
         staff.setUser(user);
         staff.setFullName(rq.getFullName());

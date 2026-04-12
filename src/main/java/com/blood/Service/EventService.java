@@ -3,6 +3,7 @@ package com.blood.Service;
 import com.blood.DTO.Event.CreateEventRequest;
 import com.blood.DTO.Event.EventResponse;
 import com.blood.DTO.Event.UpdateEventRequest;
+import com.blood.Model.EventStatus;
 import com.blood.Model.Events;
 import com.blood.Repository.EventRepository;
 import com.sun.jdi.request.EventRequest;
@@ -31,13 +32,13 @@ public class EventService {
             count = event.getRegistrations().size();
         }
 
-        String status = "SAP_TOI";
+        EventStatus status = EventStatus.SAP_TOI;
         LocalDateTime date = LocalDateTime.now();
         if (event.getEndDate().isBefore(date)) {
-            status = "DA DONG";
+            status = EventStatus.DA_DONG;
         } else if (event.getStartDate().isBefore(date) && event.getEndDate().isAfter(date)) {
-            status = "DANG MO";
-        } else status = "SAP TOI";
+            status = EventStatus.DANG_MO;
+        } else status = EventStatus.SAP_TOI;
 
         return EventResponse.builder()
                 .eventId(event.getEventId())

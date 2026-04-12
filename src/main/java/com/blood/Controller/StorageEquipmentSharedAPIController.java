@@ -1,6 +1,7 @@
 package com.blood.Controller;
 
 import com.blood.DTO.StorageEquipment.ListStorageEquipmentResponse;
+import com.blood.Model.ProductType;
 import com.blood.Service.StorageEquipmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +20,7 @@ public class StorageEquipmentSharedAPIController {
 
     @GetMapping("/list-equipment")
     public ResponseEntity<?> getStorageEquipmentList(@RequestParam(required = false) Integer bloodBagId,
-                                                     @RequestParam(required = false) String productType) {
+                                                     @RequestParam(required = false) ProductType productType) {
         try {
             List<ListStorageEquipmentResponse> list = storageEquipmentService.getListStorageEquipment(bloodBagId, productType);
             return ResponseEntity.ok().body(list);
