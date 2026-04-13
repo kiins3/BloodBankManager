@@ -36,8 +36,9 @@ public class BloodRequest {
     @Column(name = "deadline_date")
     private LocalDate deadlineDate;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "priority")
-    private String priority;
+    private Priority priority;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")

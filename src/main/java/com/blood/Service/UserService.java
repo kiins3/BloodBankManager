@@ -60,7 +60,7 @@ public class UserService {
             response.setStatus(user.getStatus());
 
             return ResponseEntity.ok(response);
-        } else if (user.getRole().equals("HOSPITAL")) {
+        } else if (user.getRole() == Role.HOSPITAL) {
             Hospital hospital = hospitalRepository.findByUser(user).orElseThrow (()-> new RuntimeException("Không tìm thấy người dùng"));
 
             GetHospitalProfileResponse response = new GetHospitalProfileResponse();

@@ -1,6 +1,7 @@
 package com.blood.DTO.BloodRequest;
 
 import com.blood.Model.BloodRequestStatus;
+import com.blood.Model.Priority;
 import com.blood.Model.ProductType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,7 +19,7 @@ import java.util.List;
 public class RequestDetailResponse {
     private Integer requestId;
     private String hospitalName;
-    private String priority;
+    private Priority priority;
     private BloodRequestStatus status;
     private LocalDate deadlineDate;
     private LocalDateTime requestedDate;

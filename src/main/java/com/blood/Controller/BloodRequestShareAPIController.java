@@ -18,7 +18,7 @@ public class BloodRequestShareAPIController {
     public ResponseEntity<?> getRequestDetail(@PathVariable Integer requestId) {
         try {
             return ResponseEntity.ok().body(bloodRequestService.getRequestDetail(requestId));
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }

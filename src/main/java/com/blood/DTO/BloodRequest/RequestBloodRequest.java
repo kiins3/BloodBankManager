@@ -1,5 +1,6 @@
 package com.blood.DTO.BloodRequest;
 
+import com.blood.Model.Priority;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,7 +16,7 @@ public class RequestBloodRequest {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDate deadlineDate;
 
-    private String priority;
+    private Priority priority;
 
     private List<DetailRequest> details;
 }

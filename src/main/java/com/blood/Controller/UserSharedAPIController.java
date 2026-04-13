@@ -18,7 +18,11 @@ public class UserSharedAPIController {
 
     @GetMapping("/get-profile")
     public ResponseEntity<?> GetMyProfile() {
-        return userService.getMyProfile();
+        try{
+            return userService.getMyProfile();
+        } catch (RuntimeException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PutMapping("/change-password")
