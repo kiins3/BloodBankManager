@@ -77,17 +77,15 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        //QUAN TRỌNG NHẤT: Điền link Vercel của bạn vào đây (KHÔNG có dấu gạch chéo '/' ở cuối)
-        // Mình để sẵn localhost để bạn vẫn code được ở nhà
         configuration.setAllowedOrigins(List.of(
                 "https://blood-bank-manager-fe.vercel.app",
                 "http://127.0.0.1:5500",
                 "http://localhost:5500"
         ));
 
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")); // Thêm PATCH nếu cần
 
-        configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type", "X-Requested-With", "Accept", "Origin"));
 
         configuration.setAllowCredentials(true);
 
