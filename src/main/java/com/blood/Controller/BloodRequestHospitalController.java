@@ -31,7 +31,7 @@ public class BloodRequestHospitalController {
         try {
             String message = bloodRequestService.requestBlood(rq);
             return ResponseEntity.ok().body(message);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }

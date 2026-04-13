@@ -26,8 +26,10 @@ public class BloodRequestStaffController {
         try {
             List<ListRequestBloodResponse> response = bloodRequestService.getListRequest(hospitalName, status);
             return ResponseEntity.ok().body(response);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+
+            return ResponseEntity.badRequest().body("Lỗi xử lý: " + e.getMessage());
         }
     }
 
@@ -36,7 +38,7 @@ public class BloodRequestStaffController {
         try {
             String message = bloodRequestService.reviewRequest(requestId, rq);
             return ResponseEntity.ok().body(message);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -46,7 +48,7 @@ public class BloodRequestStaffController {
         try {
             String message = bloodRequestService.exportBlood(requestId, rq);
             return ResponseEntity.ok().body(message);
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -55,7 +57,7 @@ public class BloodRequestStaffController {
     public ResponseEntity<?> listSuggestedBags(@PathVariable Integer requestId) {
         try {
             return ResponseEntity.ok().body(bloodRequestService.findBagsByBloodRequest(requestId));
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }

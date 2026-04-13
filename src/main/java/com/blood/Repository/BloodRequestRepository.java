@@ -10,11 +10,18 @@ import java.util.List;
 
 @Repository
 public interface BloodRequestRepository extends JpaRepository<BloodRequest,Integer> {
-    @Query("SELECT b FROM BloodRequest b JOIN b.hospital h WHERE " +
-            ":hospitalName IS NULL OR h.hospitalName = :hospitalName AND " +
-            "(:status IS NULL OR b.status = :status)")
-    List<BloodRequest> findWithFilters(@Param("hospitalName") String hospitalName,
-                                       @Param("status") String status);
+    @Query("SELECT br FROM BloodRequest br " +
+            "LEFT JOIN FETCH br.exportLog " + // Dòng này là "phép thuật" dọn sạch lỗi N+1
+            "LEFT JOIN FETCH br.hospital h " +
+            "WHERE (:status IS NULL OR br.status = :status) " +
+            "AND (:hospitalName IS NULL OR h.hospitalName = :hospitalName)")
+    List<BloodRequest> findRequestsWithFilters(
+            @Param("status") String status,
+            @Param("hospitalName") String hospitalName
+    );
 
-    List<BloodRequest> findByHospital_HospitalId(Integer hospitalId);
+    @Query("SELECT b FROM BloodRequest b WHERE b.hospital.hospitalId = :hospitalId " +
+            "ORDER BY (CASE WHEN b.priority = com.blood.Model.Priority.KHAN_CAP THEN 0 ELSE 1 END) ASC, " +
+            "b.deadlineDate ASC")
+    List<BloodRequest> findByHospital_HospitalIdCustomOrder(@Param("hospitalId") Integer hospitalId);
 }

@@ -2,16 +2,19 @@ package com.blood.Service;
 
 import com.blood.DTO.Blood.BloodBagDetailResponse;
 import com.blood.DTO.BloodRequest.*;
+import com.blood.DTO.BloodRequest.NotiMess;
 import com.blood.Model.*;
 import com.blood.Repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,6 +47,9 @@ public class BloodRequestService {
     @Autowired
     private StaffRepository staffRepository;
 
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
     @Transactional
     public String requestBlood(RequestBloodRequest rq){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -72,11 +78,35 @@ public class BloodRequestService {
         bloodRequest.setRequestDetails(requestDetails);
         bloodRequestRepository.save(bloodRequest);
 
+
+        String requestedBloods = rq.getDetails().stream()
+                .map(d -> d.getBloodType() + " (" + d.getQuantity() + " túi)")
+                .collect(Collectors.joining(", "));
+
+        if (rq.getPriority() == Priority.KHAN_CAP) {
+
+            long hoursUntilDeadline = Duration.between(LocalDateTime.now(), rq.getDeadlineDate()).toHours();
+            if (hoursUntilDeadline > 48) {
+                throw new RuntimeException("LỖI: Yêu cầu Khẩn cấp chỉ áp dụng cho các ca cần máu trong vòng 48 giờ tới. Vui lòng chọn mức độ Bình thường hoặc điều chỉnh lại thời gian");
+            }
+
+            NotiMess noti = new NotiMess(
+                    "YÊU CẦU KHẨN CẤP",
+                    "CẦN GẤP MÁU " + requestedBloods + " TÌNH TRẠNG: ",
+                     rq.getPriority(),
+                    " TỚI BỆNH VIỆN: " + currentHospital.getHospitalName() + " THỜI GIAN CẦN: ",
+                     bloodRequest.getDeadlineDate());
+
+            messagingTemplate.convertAndSend("/topic/urgent-requests", noti);
+
+            System.out.println("Đã phát thông báo WebSocket cho yêu cầu khẩn cấp");
+        }
+
         return "Gửi phiếu thành công";
     }
 
     public List<ListRequestBloodResponse> getListRequest(String hospitalName, String status){
-        List<BloodRequest> bloodRequests = bloodRequestRepository.findWithFilters(hospitalName, status);
+        List<BloodRequest> bloodRequests = bloodRequestRepository.findRequestsWithFilters(hospitalName, status);
 
         return bloodRequests.stream().map(requests -> {
             List<DetailRequest> detailRequests = requests.getRequestDetails().stream().map(details -> {
@@ -109,7 +139,7 @@ public class BloodRequestService {
         Users currentUser = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Không xác định danh tính người dùng"));
         Hospital currentHospital = hospitalRepository.findByUserId(currentUser.getId()).orElseThrow(() -> new RuntimeException("Tài khoản đang sử dụng không đúng của bệnh viện"));
         Integer realHospitalId = currentHospital.getHospitalId();
-        List<BloodRequest> bloodRequests = bloodRequestRepository.findByHospital_HospitalId(realHospitalId);
+        List<BloodRequest> bloodRequests = bloodRequestRepository.findByHospital_HospitalIdCustomOrder(realHospitalId);
         return bloodRequests.stream().map(requests -> {
             List<DetailRequest> detailRequests = requests.getRequestDetails().stream().map(details -> {
                 DetailRequest dto = new DetailRequest();
@@ -377,11 +407,13 @@ public class BloodRequestService {
                         .expiryDate(bag.getExpiredAt())
                         .bagCode(bag.getBagCode())
                         .storageLocation(bag.getSafeStorageEquipmentName())
-                        .isSuggested(i < detail.getApprovedQuantity()) // Đánh dấu gợi ý FEFO
+                        .isSuggested(i < detail.getApprovedQuantity())
                         .build();
                 result.add(dto);
             }
         }
         return result;
     }
+
+
 }
