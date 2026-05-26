@@ -1,0 +1,17 @@
+package com.blood.model.enumformat;
+
+public enum ActionType {
+    UPDATE_TEST_RESULT,
+    SEPARATE_BLOOD,
+    PRINT_LABEL_BAG,
+    STORAGE_BLOOD,
+    TRANSFER_STORAGE,
+    DISCARD_BAG,
+    UNDO_DISCARD,
+    REVIEW_REQUEST,
+    EXPORT_BLOOD,
+    PROCESS_RETURN,
+    UPDATE_EQUIPMENT,
+    UPDATE_STAFF_PROFILE,
+    UPDATE_REQUEST
+}

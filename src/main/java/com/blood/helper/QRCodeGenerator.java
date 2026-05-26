@@ -7,9 +7,11 @@ import com.google.zxing.oned.Code128Writer;
 import com.google.zxing.qrcode.QRCodeWriter;
 import org.springframework.context.annotation.Bean;
 
+import lombok.extern.slf4j.Slf4j;
 import java.io.ByteArrayOutputStream;
 import java.util.Base64;
 
+@Slf4j
 public class QRCodeGenerator {
     public static String generateQRCode(String text, int width, int height) {
         try {
@@ -22,6 +24,7 @@ public class QRCodeGenerator {
 
             return Base64.getEncoder().encodeToString(pngData);
         } catch (Exception e) {
+            log.error("Error occurred: {}", e.getMessage(), e);
             throw new RuntimeException("Lỗi khi tạo mã QR: " + e.getMessage());
         }
     }
@@ -39,6 +42,7 @@ public class QRCodeGenerator {
             return Base64.getEncoder().encodeToString(imageBytes);
 
         } catch (Exception e) {
+            log.error("Error occurred: {}", e.getMessage(), e);
             throw new RuntimeException("Lỗi không thể tạo Barcode túi máu", e);
         }
     }
