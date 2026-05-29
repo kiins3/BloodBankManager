@@ -92,12 +92,11 @@ public class BloodRequestService {
             log.info("Đã phát thông báo WebSocket cho yêu cầu khẩn cấp");
         }
 
-        // Gửi WebSocket thông báo cho tất cả yêu cầu (thông thường & khẩn cấp) qua kênh chung
         NotiMess generalNoti = new NotiMess(
                 rq.getPriority() == Priority.KHAN_CAP ? "YÊU CẦU KHẨN CẤP" : "YÊU CẦU MỚI",
                 rq.getPriority() == Priority.KHAN_CAP
-                        ? "🏥 Yêu cầu khẩn cấp từ " + currentHospital.getHospitalName() + ": Cần gấp " + requestedBloods
-                        : "🏥 Yêu cầu mới từ " + currentHospital.getHospitalName() + ": Cần " + requestedBloods,
+                        ? "Yêu cầu khẩn cấp từ " + currentHospital.getHospitalName() + ": Cần gấp " + requestedBloods
+                        : "Yêu cầu mới từ " + currentHospital.getHospitalName() + ": Cần " + requestedBloods,
                 rq.getPriority(),
                 currentHospital.getHospitalName(),
                 bloodRequest.getDeadlineDate()
@@ -139,7 +138,6 @@ public class BloodRequestService {
             throw new RuntimeException("Không được tự động chuyển đổi trạng thái đơn sang Khẩn cấp từ chức năng chỉnh sửa thông thường.");
         }
 
-        // Capture old state for action logging
         Map<String, Object> oldData = new LinkedHashMap<>();
         oldData.put("requestId", bloodRequest.getRequestId());
         oldData.put("deadlineDate", bloodRequest.getDeadlineDate());
@@ -155,15 +153,13 @@ public class BloodRequestService {
         }).collect(Collectors.toList());
         oldData.put("details", oldDetails);
 
-        // Delete old details
         requestDetailRepository.deleteAll(bloodRequest.getRequestDetails());
         bloodRequest.getRequestDetails().clear();
 
-        // Update fields
-        bloodRequest.setRequestDate(LocalDateTime.now()); // FIFO reset
+        bloodRequest.setRequestDate(LocalDateTime.now());
         bloodRequest.setDeadlineDate(rq.getDeadlineDate());
         bloodRequest.setPriority(rq.getPriority());
-        bloodRequest.setIsEdited(true); // Mark as edited
+        bloodRequest.setIsEdited(true);
 
         List<RequestDetail> newDetails = new ArrayList<>();
         for (DetailRequest detailDTO : rq.getDetails()) {
@@ -179,7 +175,6 @@ public class BloodRequestService {
         bloodRequest.setRequestDetails(newDetails);
         bloodRequestRepository.save(bloodRequest);
 
-        // Capture new state for action logging
         Map<String, Object> newData = new LinkedHashMap<>();
         newData.put("requestId", bloodRequest.getRequestId());
         newData.put("deadlineDate", bloodRequest.getDeadlineDate());
@@ -195,17 +190,15 @@ public class BloodRequestService {
         }).collect(Collectors.toList());
         newData.put("details", newDetailsLog);
 
-        // Log to action_log
         actionLogService.log(ActionType.UPDATE_REQUEST, "BloodRequest", String.valueOf(requestId), oldData, newData, "Bệnh viện cập nhật yêu cầu máu (Hàng xếp FIFO được thiết lập lại)");
 
-        // Send WebSocket notification for updated request
         String requestedBloods = rq.getDetails().stream()
                 .map(d -> d.getBloodType() + " (" + d.getQuantity() + " túi)")
                 .collect(Collectors.joining(", "));
 
         NotiMess updateNoti = new NotiMess(
                 "YÊU CẦU ĐÃ SỬA",
-                "🏥 Yêu cầu máu #" + requestId + " từ " + currentHospital.getHospitalName() + " đã được cập nhật: " + requestedBloods + " (Đã xếp lại hàng FIFO)",
+                "Yêu cầu máu #" + requestId + " từ " + currentHospital.getHospitalName() + " đã được cập nhật: " + requestedBloods + " (Đã xếp lại hàng FIFO)",
                 bloodRequest.getPriority(),
                 currentHospital.getHospitalName(),
                 bloodRequest.getDeadlineDate()
@@ -235,27 +228,22 @@ public class BloodRequestService {
             throw new RuntimeException("Chỉ được hủy yêu cầu đang chờ duyệt");
         }
 
-        // Capture old state for action logging
         Map<String, Object> oldData = new LinkedHashMap<>();
         oldData.put("requestId", bloodRequest.getRequestId());
         oldData.put("status", bloodRequest.getStatus());
 
-        // Update status to DA_HUY
         bloodRequest.setStatus(BloodRequestStatus.DA_HUY);
         bloodRequestRepository.save(bloodRequest);
 
-        // Capture new state
         Map<String, Object> newData = new LinkedHashMap<>();
         newData.put("requestId", bloodRequest.getRequestId());
         newData.put("status", bloodRequest.getStatus());
 
-        // Log to action_log
         actionLogService.log(ActionType.REVIEW_REQUEST, "BloodRequest", String.valueOf(requestId), oldData, newData, "Bệnh viện tự hủy yêu cầu máu");
 
-        // Send WebSocket notification for canceled request
         NotiMess cancelNoti = new NotiMess(
                 "YÊU CẦU ĐÃ HỦY",
-                "❌ Yêu cầu máu #" + requestId + " từ " + currentHospital.getHospitalName() + " đã bị hủy.",
+                "Yêu cầu máu #" + requestId + " từ " + currentHospital.getHospitalName() + " đã bị hủy.",
                 bloodRequest.getPriority(),
                 currentHospital.getHospitalName(),
                 bloodRequest.getDeadlineDate()
@@ -543,13 +531,11 @@ public class BloodRequestService {
         bloodRequestRepository.save(bloodRequest);
         log.info("CREATE/UPDATE: State change successfully saved for entity: {}", bloodRequest);
 
-        // Capture oldData Map
         Map<String, Object> oldData = new LinkedHashMap<>();
         oldData.put("requestId", requestId);
         oldData.put("requestStatus", oldRequestStatus);
         oldData.put("exportedBags", oldBagsInfo);
 
-        // Ghi ActionLog
         Map<String, Object> exportData = new LinkedHashMap<>();
         exportData.put("requestId", requestId);
         exportData.put("exportedBy", currentStaff.getFullName());
