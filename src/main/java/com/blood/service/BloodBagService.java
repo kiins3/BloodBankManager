@@ -68,7 +68,6 @@ public class BloodBagService {
         Donor donor = bloodBag.getRegistration().getDonor();
         Optional<TestResult> testResultOpt = testResultRepository.findByBloodBag(bloodBag);
         
-        // Double-fallback for child bags if their own TestResult is missing
         if (!testResultOpt.isPresent()) {
             if (bloodBag.getParentBagId() != null) {
                 Optional<BloodBag> parentBagOpt = bloodBagRepository.findById(bloodBag.getParentBagId());
@@ -161,7 +160,6 @@ public class BloodBagService {
             throw new RuntimeException("Túi máu không hợp lệ");
         }
 
-        // Capture original state
         Map<String, Object> oldTestData = null;
         if (existingTestResult.isPresent()) {
             TestResult oldResult = existingTestResult.get();
@@ -199,7 +197,6 @@ public class BloodBagService {
             bloodBagRepository.save(bloodBag);
             log.info("CREATE/UPDATE (PHYSICAL ERROR): State change successfully saved for entity: {}", bloodBag);
 
-            // Ghi ActionLog
             Map<String, Object> newTestData = new LinkedHashMap<>();
             newTestData.put("bloodBagId", bloodBagId);
             newTestData.put("bloodType", rq.getBloodType());
@@ -214,7 +211,6 @@ public class BloodBagService {
             actionLogService.log(ActionType.UPDATE_TEST_RESULT,
                     "TestResult", String.valueOf(bloodBagId), oldTestData, newTestData);
 
-            // Gửi mail thông báo ngay lập tức
             if (donor.getEmail() != null && !donor.getEmail().isEmpty()) {
                 String collectionDate = bloodBag.getCollectedAt() != null ? bloodBag.getCollectedAt().toString() : "N/A";
                 String emailBody = """
@@ -275,7 +271,6 @@ public class BloodBagService {
         bloodBagRepository.save(bloodBag);
         log.info("CREATE/UPDATE: State change successfully saved for entity: {}", bloodBag);
 
-        // Ghi ActionLog
         Map<String, Object> newTestData = new LinkedHashMap<>();
         newTestData.put("bloodBagId", bloodBagId);
         newTestData.put("bloodType", rq.getBloodType());
@@ -369,7 +364,6 @@ public class BloodBagService {
                 bloodBag.setStatus(BloodBagStatus.CHO_HUY);
             }
 
-            // 2. Chuẩn bị nội dung mail tùy theo trạng thái
             if (isSafe) {
                 emailBody = """
                     <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
@@ -398,7 +392,6 @@ public class BloodBagService {
             }
         }
 
-        // 3. Tiến hành gửi mail nếu có email
         if (donor.getEmail() != null && !donor.getEmail().isEmpty()) {
             emailService.sendEmail(donor.getEmail(), "KẾT QUẢ XÉT NGHIỆM HIẾN MÁU", emailBody);
         } else {
@@ -444,7 +437,6 @@ public class BloodBagService {
             return;
         }
 
-        // Kiểm tra dung tích thực tế
         if (actualVolume < minAllowed || actualVolume > maxAllowed) {
             if (overrideReason == null || overrideReason.trim().isEmpty()) {
                 String typeName = componentType.equals("RBC") ? "TUI_HONG_CAU" :
@@ -467,7 +459,6 @@ public class BloodBagService {
             throw new RuntimeException("Chỉ được tách túi máu toàn phần đã xét nghiệm");
         }
 
-        // Capture parent bag details before separation
         Map<String, Object> oldData = new LinkedHashMap<>();
         oldData.put("bloodBagId", bloodBagId);
         oldData.put("bagCode", bloodBag.getBagCode());
@@ -493,7 +484,6 @@ public class BloodBagService {
         Integer parentVolume = bloodBag.getVolume();
         String baseCode = bloodBag.getBagCode();
 
-        // Fetch parent test result directly from repository to bypass bi-directional relation cache/proxy issues
         TestResult parentTestResult = testResultRepository.findByBloodBag(bloodBag).orElse(null);
 
         if (rq.getRedCellVolume() > 0) {
@@ -524,7 +514,6 @@ public class BloodBagService {
         bloodBagRepository.save(bloodBag);
         log.info("UPDATE: State change successfully saved for entity: {}", bloodBag);
 
-        // Ghi Log hành động
         Map<String, Object> separateData = new LinkedHashMap<>();
         separateData.put("parentBagId", bloodBagId);
         separateData.put("parentStatus", BloodBagStatus.DA_TACH_CHIET);
@@ -581,7 +570,6 @@ public class BloodBagService {
             throw new RuntimeException("Túi máu chưa sẵn sàng để in dán nhãn");
         }
 
-        // Capture original state
         Map<String, Object> oldData = new LinkedHashMap<>();
         oldData.put("bloodBagId", bloodBagId);
         oldData.put("bagCode", bloodBag.getBagCode());

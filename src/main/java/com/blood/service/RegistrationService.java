@@ -50,6 +50,10 @@ public class RegistrationService {
             throw new RuntimeException("Vui lòng cập nhật đầy đủ thông tin cá nhân trước khi đăng ký hiến máu.");
         }
 
+        if (donor.getStatus() == UserStatus.INACTIVE) {
+            throw new RuntimeException("Tài khoản bạn đã bị vô hiệu hóa");
+        }
+
         LocalDate birthDate = donor.getDob();
         LocalDate eventDate = event.getStartDate().toLocalDate();
         long age = java.time.temporal.ChronoUnit.YEARS.between(birthDate, eventDate);

@@ -250,7 +250,6 @@ public class ReturnLogService {
             result = InspectResult.CHO_HUY;
             log.info("Túi [{}] → CHO_HUY (expired={}, technical={})", bloodBag.getBagCode(), isExpired, isTechnicalIssue);
         } else {
-            // → CHỜ KIỂM ĐỊNH: kỹ thuật viên sẽ kiểm tra, tái nhập hoặc hủy sau
             bloodBag.setStatus(BloodBagStatus.CHO_KIEM_DINH);
             bloodBag.setStorageEquipment(null);
             logAction = ReturnStatus.KIEM_DINH;
@@ -260,11 +259,9 @@ public class ReturnLogService {
 
         bloodBagRepository.save(bloodBag);
 
-        // Cập nhật ReturnLog (tìm log chưa có actionTaken cho túi này)
         ReturnLog returnLog = returnLogRepository
                 .findTopByBloodBagAndActionTaken(bloodBag, ReturnStatus.DANG_CHO)
                 .orElseGet(() -> {
-                    // Tạo mới nếu chưa có (ví dụ: tiếp nhận trực tiếp không qua scan trước)
                     ReturnLog newLog = new ReturnLog();
                     newLog.setBloodBag(bloodBag);
                     newLog.setStaff(staff);
@@ -276,7 +273,6 @@ public class ReturnLogService {
         returnLog.setStaff(staff);
         returnLogRepository.save(returnLog);
 
-        // Action log
         Map<String, Object> newData = new LinkedHashMap<>();
         newData.put("bloodBagId", bloodBag.getBloodBagId());
         newData.put("action", logAction.name());
