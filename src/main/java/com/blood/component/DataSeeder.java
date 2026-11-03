@@ -6,6 +6,7 @@ import com.blood.model.enumformat.UserStatus;
 import com.blood.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -18,6 +19,12 @@ public class DataSeeder implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Value("${app.seed.admin-email}")
+    private String adminEmail;
+
+    @Value("${app.seed.admin-password}")
+    private String adminPassword;
+
     @Override
     public void run(String... args) throws Exception {
         boolean hasAdmin = userRepository.existsByRole(Role.ADMIN);
@@ -26,13 +33,13 @@ public class DataSeeder implements CommandLineRunner {
             log.info("CẢNH BÁO: Không tìm thấy tài khoản Admin nào. Đang tiến hành tạo Root Admin mặc định...");
 
             Users rootAdmin = new Users();
-            rootAdmin.setEmail("hethongmau@gmail.com");
-            rootAdmin.setPassword(passwordEncoder.encode("123456"));
+            rootAdmin.setEmail(adminEmail);
+            rootAdmin.setPassword(passwordEncoder.encode(adminPassword));
             rootAdmin.setRole(Role.ADMIN);
             rootAdmin.setStatus(UserStatus.ACTIVE);
             userRepository.save(rootAdmin);
 
-            log.info("Đã tạo thành công Root Admin. Email: hethongmau@gmail.com | Password: 123456");
+            log.info("Đã tạo thành công Root Admin. Email: {}", adminEmail);
             log.info("Vui lòng đăng nhập và đổi mật khẩu ngay sau lần sử dụng đầu tiên!");
         }
     }

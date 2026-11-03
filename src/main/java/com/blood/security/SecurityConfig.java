@@ -46,6 +46,7 @@ public class SecurityConfig {
             "/v3/api-docs",
             "/v3/api-docs/**",
             "/ws-bloodbank/**",
+            "/actuator/health/**",
             "/api/shared/event/list-event-coming"
     };
 
