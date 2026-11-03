@@ -21,7 +21,6 @@ public class JwtTokenProvider {
 
     //1. Tao key ma hoa tu secret_key
     private Key getSignKey(){
-        byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
         return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
 
