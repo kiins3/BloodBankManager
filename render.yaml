@@ -1,0 +1,49 @@
+# Render Blueprint: API (Docker, free) + Redis (Render Key Value, free).
+# MySQL and RabbitMQ come from free external providers, see DEPLOY.md.
+services:
+  - type: web
+    name: bloodbank-api
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /actuator/health
+    autoDeploy: true
+    envVars:
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: RABBITMQ_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_EMAIL
+        value: admin@bloodbank.local
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://blood-bank-manager-fe.vercel.app,http://localhost:*,http://127.0.0.1:*
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: REDIS_HOST
+        fromService:
+          type: keyvalue
+          name: bloodbank-redis
+          property: host
+      - key: REDIS_PORT
+        fromService:
+          type: keyvalue
+          name: bloodbank-redis
+          property: port
+
+  - type: keyvalue
+    name: bloodbank-redis
+    plan: free
+    region: singapore
+    maxmemoryPolicy: noeviction
+    ipAllowList: []   # only reachable from Render services in the same region
