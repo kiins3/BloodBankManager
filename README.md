@@ -97,6 +97,10 @@ Start MySQL, Redis and RabbitMQ yourself, set the variables from `.env.example` 
 ./mvnw spring-boot:run
 ```
 
+## Deploy
+
+Free setup on Render + Aiven MySQL + CloudAMQP, with a Render Blueprint: see [DEPLOY.md](DEPLOY.md).
+
 ## Configuration
 
 Everything secret comes from environment variables. See [`.env.example`](.env.example).
@@ -106,6 +110,7 @@ Everything secret comes from environment variables. See [`.env.example`](.env.ex
 | `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` | MySQL connection |
 | `JWT_SECRET` | HS256 signing key, at least 32 characters |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | Root admin created on first start |
+| `CORS_ALLOWED_ORIGINS` | Frontend origins allowed to call the API and WebSocket |
 | `MAIL_USERNAME`, `MAIL_PASSWORD` | Gmail SMTP (App Password). Optional |
 | `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_SSL` | Redis |
 | `RABBITMQ_URL` or `RABBITMQ_HOST`/`_USERNAME`/`_PASSWORD` | RabbitMQ |
