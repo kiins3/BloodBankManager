@@ -46,8 +46,9 @@ public class ReturnLogController {
 
     @PostMapping("/inspect")
     public ResponseEntity<BulkInspectResultResponse> processBulkInspection(
-            @RequestHeader("X-Staff-Id") Integer processorId,
+            Principal principal,
             @RequestBody BulkInspectRequest request) {
-        return ResponseEntity.ok(returnLogService.processBulkInspection(processorId, request));
+        // The inspector is the logged-in staff member, never an id sent by the client.
+        return ResponseEntity.ok(returnLogService.processBulkInspection(principal.getName(), request));
     }
 }
