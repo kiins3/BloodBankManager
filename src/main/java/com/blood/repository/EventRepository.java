@@ -41,5 +41,10 @@ public interface EventRepository extends JpaRepository<Events, Integer> {
 
     List<Events> findByStatus(EventStatus eventStatus);
 
-    List<String> findEmailsByEventId(Integer eventId);
+    // Emails of donors still registered for the campaign, to notify them when it is cancelled.
+    @Query("SELECT DISTINCT r.donor.email FROM EventRegistration r " +
+            "WHERE r.events.eventId = :eventId " +
+            "AND r.status <> com.blood.model.enumformat.EventRegisStatus.DA_HUY " +
+            "AND r.donor.email IS NOT NULL")
+    List<String> findEmailsByEventId(@Param("eventId") Integer eventId);
 }

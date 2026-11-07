@@ -33,6 +33,7 @@ public class ReturnLogService {
     private final BloodBagRepository bloodBagRepository;
     private final StaffRepository staffRepository;
     private final HospitalRepository hospitalRepository;
+    private final UserRepository userRepository;
     private final ActionLogService actionLogService;
     private final SimpMessagingTemplate messagingTemplate;
 
@@ -170,14 +171,28 @@ public class ReturnLogService {
     // =========================================================================
 
     @Transactional
-    public BulkInspectResultResponse processBulkInspection(Integer processorId, BulkInspectRequest request) {
+    public BulkInspectResultResponse processBulkInspection(String processorEmail, BulkInspectRequest request) {
 
         if (request == null || request.getItems() == null || request.getItems().isEmpty()) {
             throw new RuntimeException("Danh sách kiểm tra trống!");
         }
+        if (request.getReturnOrderId() == null) {
+            throw new RuntimeException("Thiếu mã đơn hoàn trả");
+        }
 
-        Staff staff = staffRepository.findById(processorId)
+        Users user = userRepository.findByEmail(processorEmail)
+                .orElseThrow(() -> new RuntimeException("Không xác định danh tính người dùng"));
+        Staff staff = staffRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy nhân viên xử lý"));
+
+        // Only bags that the hospital actually returned in this order can be inspected.
+        java.util.Set<Integer> bagsInOrder = returnLogRepository.findByReturnOrderId(request.getReturnOrderId()).stream()
+                .filter(l -> l.getBloodBag() != null)
+                .map(l -> l.getBloodBag().getBloodBagId())
+                .collect(Collectors.toSet());
+        if (bagsInOrder.isEmpty()) {
+            throw new RuntimeException("Không tìm thấy đơn hoàn trả #" + request.getReturnOrderId());
+        }
 
         int successCount = 0;
         int pendingHuy = 0;
@@ -186,6 +201,9 @@ public class ReturnLogService {
 
         for (InspectItemRequest item : request.getItems()) {
             try {
+                if (!bagsInOrder.contains(item.getBloodBagId())) {
+                    throw new RuntimeException("Túi không thuộc đơn hoàn trả này");
+                }
                 InspectResult result = inspectSingleBag(staff, item);
                 successCount++;
                 if (result == InspectResult.CHO_HUY) pendingHuy++;
@@ -198,11 +216,9 @@ public class ReturnLogService {
 
         boolean allDone = false;
 
-        if (request.getReturnOrderId() != null) {
-            allDone = checkAllLogsInOrderProcessed(request.getReturnOrderId());
-            if (allDone) {
-                notifyTechniciansAfterReturnInspection(request.getReturnOrderId(), pendingHuy, pendingKiemDinh);
-            }
+        allDone = checkAllLogsInOrderProcessed(request.getReturnOrderId());
+        if (allDone && successCount > 0) {
+            notifyTechniciansAfterReturnInspection(request.getReturnOrderId(), pendingHuy, pendingKiemDinh);
         }
 
         String summary = String.format(

@@ -39,6 +39,24 @@ public class BloodRequestService {
     private final ActionLogService actionLogService;
     private final ReturnLogRepository returnLogRepository;
 
+    private boolean isHospitalCaller() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_HOSPITAL".equals(a.getAuthority()));
+    }
+
+    /** Hospitals may only see or act on their own requests. Staff and admin are not restricted. */
+    private void assertOwnedByCurrentHospital(BloodRequest bloodRequest) {
+        if (!isHospitalCaller()) return;
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        Users currentUser = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Không xác định danh tính người dùng"));
+        Hospital currentHospital = currentUser.getHospital();
+        if (currentHospital == null || !bloodRequest.getHospital().getHospitalId().equals(currentHospital.getHospitalId())) {
+            throw new RuntimeException("Không tìm thấy yêu cầu");
+        }
+    }
+
     @Transactional
     public String requestBlood(RequestBloodRequest rq){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -378,6 +396,7 @@ public class BloodRequestService {
     public RequestDetailResponse getRequestDetail(Integer requestId) {
         BloodRequest bloodRequest = bloodRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu"));
+        assertOwnedByCurrentHospital(bloodRequest);
 
         List<DetailRequest> requestedItems = bloodRequest.getRequestDetails().stream().map(d -> {
             DetailRequest dto = new DetailRequest();
@@ -430,6 +449,17 @@ public class BloodRequestService {
     public String exportBlood(Integer requestId, ExportBloodRequest rq) {
         BloodRequest bloodRequest = bloodRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu máu"));
+
+        if (bloodRequest.getStatus() != BloodRequestStatus.DA_DUYET_TOAN_BO
+                && bloodRequest.getStatus() != BloodRequestStatus.DA_DUYET_MOT_PHAN) {
+            throw new RuntimeException("Chỉ xuất kho cho yêu cầu đã được duyệt");
+        }
+        if (rq.getBloodBagId() == null || rq.getBloodBagId().isEmpty()) {
+            throw new RuntimeException("Chưa chọn túi máu nào để xuất");
+        }
+        if (new HashSet<>(rq.getBloodBagId()).size() != rq.getBloodBagId().size()) {
+            throw new RuntimeException("Danh sách túi máu bị trùng");
+        }
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email = authentication.getName();
@@ -650,9 +680,27 @@ public class BloodRequestService {
 
         BloodRequest bloodRequest = bloodRequestRepository.findById(requestId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy yêu cầu máu"));
+        assertOwnedByCurrentHospital(bloodRequest);
+
+        if (bloodRequest.getStatus() != BloodRequestStatus.DANG_VAN_CHUYEN) {
+            throw new RuntimeException("Chỉ xác nhận nhận hàng cho đơn đang vận chuyển");
+        }
 
         List<BloodBag> allBags = bloodBagRepository.findBloodBagsByRequestId(requestId);
         List<RejectedBagInfo> rejectedList = (response != null) ? response.getRejectedBags() : null;
+
+        if (rejectedList != null && !rejectedList.isEmpty()) {
+            Set<Integer> bagIdsInOrder = allBags.stream().map(BloodBag::getBloodBagId).collect(Collectors.toSet());
+            Set<Integer> seen = new HashSet<>();
+            for (RejectedBagInfo rejected : rejectedList) {
+                if (!bagIdsInOrder.contains(rejected.getBloodBagId())) {
+                    throw new RuntimeException("Túi máu #" + rejected.getBloodBagId() + " không thuộc đơn hàng này");
+                }
+                if (!seen.add(rejected.getBloodBagId())) {
+                    throw new RuntimeException("Túi máu #" + rejected.getBloodBagId() + " bị trả lại hai lần");
+                }
+            }
+        }
 
         String message = "";
 
