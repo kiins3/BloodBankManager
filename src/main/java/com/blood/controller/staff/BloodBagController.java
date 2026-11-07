@@ -78,6 +78,11 @@ public class BloodBagController {
         return ResponseEntity.ok(message);
     }
 
+    @PatchMapping("/requalify")
+    public ResponseEntity<?> requalifyReturnedBags(@RequestBody RequalifyRequest rq) {
+        return ResponseEntity.ok(bloodBagService.requalifyReturnedBags(rq));
+    }
+
     @PatchMapping("/undo-discard-blood")
     public ResponseEntity<?> undoDiscardBlood(@RequestBody List<Integer> bloodBagIds) {
         String message = bloodBagService.undoDiscardBlood(bloodBagIds);

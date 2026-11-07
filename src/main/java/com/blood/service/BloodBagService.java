@@ -291,7 +291,10 @@ public class BloodBagService {
     public ResponseEntity<?> sendEmail(Integer bloodBagId, boolean forceResend) {
         BloodBag bloodBag = bloodBagRepository.findById(bloodBagId).orElseThrow(() -> new RuntimeException("Không tìm thấy túi máu"));
         TestResult testResult = bloodBag.getTestResult();
-        Donor donor = bloodBag.getRegistration().getDonor();
+        if (testResult == null || testResult.getFinalConclusion() == null) {
+            throw new RuntimeException("Túi máu chưa có kết quả xét nghiệm");
+        }
+        Donor donor = bloodBag.getRegistration() != null ? bloodBag.getRegistration().getDonor() : null;
 
         if (donor == null) {
             throw new RuntimeException("Túi máu chưa được gắn với người hiến nào");
@@ -356,13 +359,8 @@ public class BloodBagService {
                     testResult.getSyphilis() == TestResultValue.AM_TINH &&
                     testResult.getMalaria() == TestResultValue.AM_TINH;
 
-            if (isSafe) {
-                testResult.setFinalConclusion("An toàn");
-                bloodBag.setStatus(BloodBagStatus.CHO_TACH_CHIET);
-            } else {
-                testResult.setFinalConclusion("Không an toàn");
-                bloodBag.setStatus(BloodBagStatus.CHO_HUY);
-            }
+            // Sending the email only notifies the donor. The bag status was already set when the
+            // result was entered, and the bag may have moved on since (separated, stored, exported).
 
             if (isSafe) {
                 emailBody = """
@@ -401,10 +399,8 @@ public class BloodBagService {
         testResult.setEmailSent(true);
         testResultRepository.save(testResult);
         log.info("CREATE/UPDATE: State change successfully saved for entity: {}", testResult);
-        bloodBagRepository.save(bloodBag);
-        log.info("CREATE/UPDATE: State change successfully saved for entity: {}", bloodBag);
 
-        return ResponseEntity.ok("Cập nhật và gửi mail thành công!");
+        return ResponseEntity.ok("Đã gửi kết quả cho người hiến");
     }
 
     public class VolumeWarningException extends RuntimeException {
@@ -764,6 +760,63 @@ public class BloodBagService {
         }
 
         return "Đã hủy thành công " + bloodBags.size() + " túi máu";
+    }
+
+    /**
+     * Closes the re-check of bags returned by a hospital. Bags that pass go back to CHO_BAO_QUAN
+     * so inventory can store them again; bags that fail go to CHO_HUY.
+     */
+    @Transactional
+    public String requalifyReturnedBags(RequalifyRequest rq) {
+        if (rq == null || rq.getBloodBagIds() == null || rq.getBloodBagIds().isEmpty()) {
+            throw new RuntimeException("Chưa chọn túi máu nào");
+        }
+        if (rq.getPassed() == null) {
+            throw new RuntimeException("Chưa chọn kết quả kiểm định");
+        }
+        if (!rq.getPassed() && (rq.getNote() == null || rq.getNote().isBlank())) {
+            throw new RuntimeException("Nhập lý do khi túi không đạt kiểm định");
+        }
+
+        List<BloodBag> bloodBags = bloodBagRepository.findAllById(rq.getBloodBagIds());
+        if (bloodBags.size() != new HashSet<>(rq.getBloodBagIds()).size()) {
+            throw new RuntimeException("Có túi máu không tồn tại");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        for (BloodBag bag : bloodBags) {
+            if (bag.getStatus() != BloodBagStatus.CHO_KIEM_DINH) {
+                throw new RuntimeException("Túi máu " + bag.getBagCode() + " không ở trạng thái chờ kiểm định");
+            }
+            if (rq.getPassed() && bag.getExpiredAt() != null && bag.getExpiredAt().isBefore(now)) {
+                throw new RuntimeException("Túi máu " + bag.getBagCode() + " đã hết hạn, không thể nhập lại kho");
+            }
+        }
+
+        BloodBagStatus newStatus = rq.getPassed() ? BloodBagStatus.CHO_BAO_QUAN : BloodBagStatus.CHO_HUY;
+        for (BloodBag bag : bloodBags) {
+            Map<String, Object> oldData = new LinkedHashMap<>();
+            oldData.put("bloodBagId", bag.getBloodBagId());
+            oldData.put("bagCode", bag.getBagCode());
+            oldData.put("status", bag.getStatus());
+
+            bag.setStatus(newStatus);
+            bag.setStorageEquipment(null);
+
+            Map<String, Object> newData = new LinkedHashMap<>();
+            newData.put("bloodBagId", bag.getBloodBagId());
+            newData.put("requalified", rq.getPassed());
+            newData.put("note", rq.getNote());
+            newData.put("newStatus", newStatus);
+            actionLogService.log(ActionType.PROCESS_RETURN,
+                    "BloodBag", String.valueOf(bag.getBloodBagId()), oldData, newData);
+        }
+        bloodBagRepository.saveAll(bloodBags);
+        log.info("REQUALIFY: {} bags -> {}", bloodBags.size(), newStatus);
+
+        return rq.getPassed()
+                ? "Đã duyệt " + bloodBags.size() + " túi đạt, chờ nhập lại kho"
+                : "Đã chuyển " + bloodBags.size() + " túi sang chờ hủy";
     }
 
     @Transactional
