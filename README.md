@@ -75,6 +75,14 @@ docker compose up -d --build
 | RabbitMQ console | http://localhost:15673 (guest / guest) |
 | MySQL | localhost:3307 (root / `DB_PASSWORD`) |
 
+Load demo data (campaigns, donors, blood bags through every stage, hospital requests) by walking the real API:
+
+```bash
+python scripts/seed_demo.py
+```
+
+It creates `doctor@`, `nurse@`, `tech@`, `inventory@`, `hospital@` and `donor@bloodbank.local` (password `123456`).
+
 On first start the app creates an admin account from `ADMIN_EMAIL` / `ADMIN_PASSWORD` (defaults: `admin@bloodbank.local` / `Admin@123`). Donors sign up through `POST /auth/sign-up`.
 
 ### Try it with curl
