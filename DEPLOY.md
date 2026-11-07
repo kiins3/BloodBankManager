@@ -31,7 +31,24 @@
 
 ## 4. Frontend on Vercel
 
-Set the API URL in `config.js` of [BloodBankManagerFE](https://github.com/kiins3/BloodBankManagerFE) (`DEPLOYED_API`) to the Render URL, and add the Vercel domain to `CORS_ALLOWED_ORIGINS` on Render if it is not `blood-bank-manager-fe.vercel.app`.
+The web client is [bloodbank-web](https://github.com/kiins3/bloodbank-web) (Next.js).
+
+1. Vercel → **Add New → Project** → import `bloodbank-web`. The framework is detected as Next.js.
+2. Add the environment variable `NEXT_PUBLIC_API_URL` = `https://<service>.onrender.com` (no trailing slash), then deploy.
+3. If the project domain is not `bloodbank-web.vercel.app`, add it to `CORS_ALLOWED_ORIGINS` on Render (comma separated) and redeploy the API.
+
+## 5. Demo data
+
+The seed script needs direct database access for one step, so seed locally and copy the result to Aiven:
+
+```
+docker compose down -v && docker compose up -d
+python scripts/seed_demo.py
+docker compose exec -T mysql sh -c 'mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" --no-tablespaces --set-gtid-purged=OFF BloodBankDB' > demo.sql
+docker compose exec -T mysql mysql -h <aiven-host> -P <port> -u avnadmin -p<password> --ssl-mode=REQUIRED defaultdb < demo.sql
+```
+
+Import before the API's first start on Render, or restart the API afterwards. `demo.sql` is ignored by git.
 
 ## Keeping it awake (optional)
 
