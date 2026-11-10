@@ -38,7 +38,7 @@ The web client is [bloodbank-web](https://github.com/kiins3/bloodbank-web) (Next
 
 1. Vercel → **Add New → Project** → import `bloodbank-web`. The framework is detected as Next.js.
 2. Add the environment variable `NEXT_PUBLIC_API_URL` = `https://<service>.onrender.com` (no trailing slash), then deploy.
-3. If the project domain is not `bloodbank-web.vercel.app`, add it to `CORS_ALLOWED_ORIGINS` on Render (comma separated) and redeploy the API.
+3. If the project domain is not `bloodbank-vn.vercel.app`, add it to `CORS_ALLOWED_ORIGINS` on Render (comma separated) and redeploy the API.
 
 ## 5. Demo data
 
