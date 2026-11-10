@@ -6,8 +6,8 @@ REST API that runs the day-to-day work of a blood bank: donor registration, dona
 
 | | |
 |---|---|
-| Frontend (live) | https://blood-bank-manager-fe.vercel.app · [source](https://github.com/kiins3/BloodBankManagerFE) |
-| API docs | `/swagger-ui.html` once the app is running |
+| Live demo | https://bloodbank-vn.vercel.app (demo accounts are listed on the login page) · [frontend source](https://github.com/kiins3/bloodbank-web) |
+| API | https://bloodbank-api-i4a4.onrender.com/swagger-ui.html (free tier: the first request after idle takes about a minute) |
 | Size | ~95 endpoints · 16 JPA entities · 5 roles · ~10k lines of Java |
 
 ---
