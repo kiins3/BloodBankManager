@@ -107,7 +107,7 @@ Start MySQL, Redis and RabbitMQ yourself, set the variables from `.env.example` 
 
 ## Deploy
 
-Free setup on Render + Aiven MySQL + CloudAMQP, with a Render Blueprint: see [DEPLOY.md](DEPLOY.md).
+Free setup on Render + TiDB Cloud (MySQL compatible) + CloudAMQP, with a Render Blueprint: see [DEPLOY.md](DEPLOY.md).
 
 ## Configuration
 
